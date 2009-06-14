@@ -1,5 +1,11 @@
+User Privlage levels
+
 reg   --> Registeration
 chead --> Catagory Head
 ehead --> Event head
 org   --> Organiser
 vol   --> Volunter
+
+TODO NOTES HERE -->
+1) Work on online test
+2) user authentication
