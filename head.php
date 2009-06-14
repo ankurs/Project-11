@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>TechTatva 09</title>
+<title><?php include "config.php"; echo $Name; ?></title>
 <link rel="stylesheet" href="main.css" type="text/css" />
 </head>
 <body>

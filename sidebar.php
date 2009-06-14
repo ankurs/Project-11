@@ -1,4 +1,5 @@
 <?php
+
 include_once "class.inc.php";
 $c=new Catagory();
 echo '<div id="sidebar"><b>Menu</b><br><br>';
