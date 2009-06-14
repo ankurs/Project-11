@@ -1,0 +1,41 @@
+.header{ 
+		height:10%;
+		width:86%; 
+		color: black;
+		text-align:center;
+		padding-top:20px;
+		padding-left:13%;
+		
+}
+
+#sidebar{ 
+		top:10%;
+		width:13%;
+		float: left;
+		text-align:left;	
+}
+
+.center{
+		top:10%;
+		margin-left:16%;
+		margin-right: 1%;
+		text-align:center;
+}
+#center{
+		top:10%;
+		margin-left:16%;
+		margin-right: 1%;
+		text-align:center;
+}
+
+.footer{
+	height: 4%;
+	top:95%;
+	width:100%;
+	background-color:transparent;
+	position: fixed;
+	text-align: left;
+}
+.footer a{
+		color:black;
+}
