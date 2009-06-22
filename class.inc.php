@@ -65,11 +65,11 @@ class Project11
 		$row=mysql_fetch_row(mysql_query("select password,level from heads where username='{$uname}'",$this->con));
 		if ($row)
 		{
-			if ($row[0] == sha1($pass+$this->SALT))
+			if ($row[0] == sha1($pass.$this->SALT))
 			{
 				$tval = time();
-				$key = sha1($this->SALT+$tval);
-				$res=mysql_query("update heads set passkey ='{$key}', reset='{$tval}' where username='{$uname}'",$this->con) or die (mysql_error());
+				$key = sha1($tval.$this->SALT);
+				$res=mysql_query("update heads set passkey ='{$key}', reset='{$tval}' where username='{$uname}'",$this->con);
 				$ret = array();
 				$ret[] = $row[1];
 				$ret[] = $key;
@@ -123,7 +123,7 @@ class Head extends Project11
 			done         - when user was added */
 		$uname = strtolower($this->clean($uname)); //we convert the username to lowercase
 		$name = ucwords($this->clean($name));// capitalise first letter of every word
-		$pass = sha1($this->clean($pass) + $this->SALT); // taking sha1 with a salt for password
+		$pass = sha1($this->clean($pass).$this->SALT); // taking sha1 with a salt for password
 		$phone = $this->clean($phone);
 		$level = strtolower($this->clean($level));
 		$res = mysql_query("insert into {$this->table}(username,password,name,level,phone) values('{$uname}','{$pass}','{$name}','{$level}','{$phone}')",$this->con);
@@ -205,8 +205,8 @@ class Head extends Project11
 			error  -  on error
 			done   -  when done
 		*/
-		$old=sha1($this->clean($old) + $this->SALT);
-		$new=sha1($this->clean($new) + $this->SALT);
+		$old=sha1($this->clean($old).$this->SALT);
+		$new=sha1($this->clean($new).$this->SALT);
 		mysql_query("update heads set password='{$new}' where userid='{$this->id}' and password ='{$old}' limit 1",$this->con);
 		if (mysql_affected_rows())
 		{
@@ -218,12 +218,23 @@ class Head extends Project11
 		}
 	}
 
-	public function resetPass($new)
+	public function resetPass($user,$new)
 	{
 		/* resets the password for select head, retunrns
 			done  -  when done
 			error -  on error
 		*/
+        $new=sha1($this->clean($new).$this->SALT);
+        $user=$this->clean($user);
+		mysql_query("update heads set password='{$new}' where username='{$user}'  limit 1",$this->con);
+		if (mysql_affected_rows())
+		{
+			return "done";
+		}
+		else
+		{
+			return "error";
+		}
 	}
 }
 
@@ -513,8 +524,10 @@ class Catagory extends Project11
 			TODO - find a better way to do this..
 			CHECK - is it working for all condictions??
 		*/
+        if (!$this->id) // if no id is set we return False
+            return False;
 		$query="select username from heads where userid in (select userid from event_head where eventid in (select eventid from cat_event where catid='{$this->id}')) or userid in (select userid from event_org where eventid in (select eventid from cat_event where catid='{$this->id}')) or userid in (select userid from event_vol where eventid in (select eventid from cat_event where catid='{$this->id}'))"; // thats one big query
-		$res = mysql_query($query,$this->con) or die (mysql_error());// checking for ehead, org or vol
+		$res = mysql_query($query,$this->con);// checking for ehead, org or vol
 		while($result=mysql_fetch_row($res))
 		{
 			if ($result[0] == $username)
@@ -793,7 +806,7 @@ class Registeration extends Project11
 		$regno = $this->clean($regno);
 		$phone = $this->clean($phone);
 		$cllg = "MIT MANIPAL"; // change if you are not in mit,manipal - CHECK
-		$res = mysql_query("select reg,name,sem from student where reg='{$regno}' and reg not in (select regno from reg_user)",$this->con) or die(mysql_error());
+		$res = mysql_query("select reg,name,sem from student where reg='{$regno}' and reg not in (select regno from reg_user)",$this->con);
 		$row=mysql_fetch_row($res);
 		if ($row)
 		{
@@ -862,6 +875,26 @@ class Registeration extends Project11
 			return array("error");
 		}
 	}
+    function getDelInfo($delno)
+    {
+        /* takes delegate number as input and returns iformation about him
+            array(info)  -- if found
+            NULL         -- if not found
+        */
+        $delno = $this->clean($delno);
+        $res = mysql_query("select * from reg_user where delno='{$delno}'",$this->con);
+        $row = mysql_fetch_array($res);
+        if ($row)
+        {
+            return $row;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+
 }
+
 
 ?>

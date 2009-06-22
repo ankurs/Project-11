@@ -2,7 +2,7 @@
 
 include_once "class.inc.php";
 $c=new Catagory();
-echo '<div id="sidebar"><b>Menu</b><br><br>';
+echo '<div id="sidebar"><center>';
 $main = new Project11();
 if (isset($_GET['logout']))
 {
@@ -41,12 +41,13 @@ else
 		setcookie("key",$auth[1],time()+3600);
 	} 
 }
-echo '<a href="index.php">Home</a><br>';
+echo '</center><a href="index.php">Home</a><br>';
 echo '<a href="reg.php">Registeration</a><br>';
+echo '<a href="#" onclick="toggleCat()">Catagories</a><br><div id="sidebar-catagory"><br>';
 $catagories = $c->getList();
 foreach ($catagories as $cat)
 {
 	echo "<a href='catagory.php?id={$cat['catid']}'>{$cat['name']}</a><br>";
 }
-echo '<br></div>';
+echo '</div><br></div>';
 ?>
