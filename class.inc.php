@@ -3,11 +3,11 @@
 class Project11
 {
 	// common for all child classes
-	private  $host=""; // Database Host
-	private  $dbname=""; // Database Name
-	private  $dbuser="";  // Database User
-	private  $dbpass=""; // Database Password
-	protected  $SALT = ""; // Salt to be added to password before taking sha1
+	private  $host="localhost"; // Database Host
+	private  $dbname="project11"; // Database Name
+	private  $dbuser="root";  // Database User
+	private  $dbpass="ankur"; // Database Password
+	protected  $SALT = "dcnufeioucreoiwuroi489579847598"; // Salt to be added to password before taking sha1
 
 	protected  $con = NULL; // connection object
 	protected $logintime =1800; // time after which the user has to re login 
@@ -310,7 +310,7 @@ class Catagory extends Project11
 		}
 	}
 
-	public function getInfo($catid)
+	public function getInfo($catid=NULL)
 	{
 		/* returns array(name,info) for the given ($catid) catagory */
 		$catid = $this->clean($catid);
@@ -747,20 +747,25 @@ class Event extends Project11
 	{
 		/* adds the given delegate number to the particular event, returns
 			done	- on sucess
-			error	- on error
+			regDone	- when already registered
 			NULL	- when value not set
 		*/
 		if ($delno and $this->id)
 		{
 			$delno=$this->clean($delno);
-			mysql_query("insert into reg_info(delno,eventid) values ('{$delno}','{$this->id}')",$this->con);
-			if (mysql_affected_rows())
-			{
-				return "done";
-			}
+            $res = mysql_query("select * from reg_info where delno='{$delno}' and eventid='{$this->id}'",$this->con);
+            $row=mysql_fetch_row($res);
+            if(!$row)
+            {
+    			mysql_query("insert into reg_info(delno,eventid) values ('{$delno}','{$this->id}')",$this->con);
+	    		if (mysql_affected_rows($this->con))
+		    	{
+			    	return "done";
+                }
+			}   
 			else
 			{
-				return "error";
+				return "regDone";
 			}
 		}
 		else
@@ -805,7 +810,7 @@ class Registeration extends Project11
 		*/
 		$regno = $this->clean($regno);
 		$phone = $this->clean($phone);
-		$cllg = "MIT MANIPAL"; // change if you are not in mit,manipal - CHECK
+		$cllg = "MIT MANIPAL"; // change if you are not in mit,manipal (move to options TODO)- CHECK
 		$res = mysql_query("select reg,name,sem from student where reg='{$regno}' and reg not in (select regno from reg_user)",$this->con);
 		$row=mysql_fetch_row($res);
 		if ($row)
@@ -847,7 +852,7 @@ class Registeration extends Project11
 		$sem=$this->clean($sem);
 		$cllg=$this->clean($cllg);
 		$phone=$this->clean($phone);
-		if ($regno !=NULL) // handel the non existant reg number in database case
+		if ($regno !=NULL) // for non existant reg number in database case
 		{
 			$regno = $this->clean($regno);
 			$res = mysql_query("select delno from reg_user where regno = '{$regno}'",$this->con);

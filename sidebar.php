@@ -42,12 +42,19 @@ else
 	} 
 }
 echo '</center><a href="index.php">Home</a><br>';
-echo '<a href="reg.php">Registeration</a><br>';
-echo '<a href="#" onclick="toggleCat()">Catagories</a><br><div id="sidebar-catagory"><br>';
+echo '<a href="register.php">Main Registeration</a><br>';
+echo '<a href="#" onclick="toggleCat()">Registeration</a><br><div id="sidebar-catagory"><br>';
 $catagories = $c->getList();
+foreach ($catagories as $cat)
+{
+	echo "<a href='regcat.php?id={$cat['catid']}'>{$cat['name']}</a><br>";
+}
+echo '<br></div><a href="#" onclick="toggleCatInfo()">Information</a><br><div id="sidebar-catagoryinfo"><br>';
 foreach ($catagories as $cat)
 {
 	echo "<a href='catagory.php?id={$cat['catid']}'>{$cat['name']}</a><br>";
 }
-echo '</div><br></div>';
+echo "<br></div>kjkj";
+
+echo '<br></div>';
 ?>

@@ -11,7 +11,7 @@
 <div id="center">
 <?php
 
-$goBack = "<a href='reg.php'>Back</a>";
+$goBack = "<a href='regcat.php?id={$_GET['id']}'>Back</a>";
 $r = new Registeration();
 if (True)//TODO check everything here
 {
@@ -22,19 +22,15 @@ if (True)//TODO check everything here
             $c->setId($_GET['id']);
         if (($c->hasPermission($_COOKIE['user'])) or ($level=="admin"))
         {
-            if (!isset($_POST['reg']))
-            {
-                echo "<form method='POST'>Enter the Deligate Number<br><input type='text' name='delno' /><br><input type='submit' name='reg' value='Register' /></form>";
-            }
-            else
+            if (isset($_POST['reg']))
             {
                 $r= new Registeration();
                 $c = new Catagory();
                 $delInfo = $r->getDelInfo($_POST['delno']);
                 if ($delInfo)
                 {
-                    echo "<form method='POST' name='eventreg'><center><table>";
-                    echo "<tr><td>Del no</td><td> {$delInfo['delno']}</td></tr><tr><td>Name</td><td> {$delInfo['name']}</td></tr><tr><td>College</td><td> {$delInfo['cllg']}</td></tr><tr><td>Phone</td><td> {$delInfo['phone']}</td></tr><tr><td>Select Event</td></tr><tr><td>";
+                    echo "<form method='POST'><center><table>";
+                    echo "<tr><td>Del no</td><td> {$delInfo['delno']}</td></tr><tr><td>Name</td><td> {$delInfo['name']}</td></tr><tr><td>College</td><td> {$delInfo['cllg']}</td></tr><tr><td>Phone</td><td> {$delInfo['phone']}</td></tr><tr><td>Select Event</td></tr><tr><td><input type='hidden' name='delno' value='{$delInfo['delno']}' />";
                     $c->setId($_GET['id']);
                     $count =0;
                     foreach ($c->getEvents() as $event) 
@@ -45,18 +41,49 @@ if (True)//TODO check everything here
                 }
                 else
                 {
-                    echo "Sorry Wrong Delegate Number";
+                    echo "Sorry Wrong Delegate Number<br>".$goBack;
                 }
+            }
+            else if (isset($_POST['eventreg']))
+            {
+                $e= new Event();
+                if (isset($_POST['event']) and isset($_POST['delno']))
+                {
+                    $e->setId($_POST['event']);
+                    $result = $e->addUser($_POST['delno']);
+                    if ($result)
+                    {
+                        if ($result == "regDone")
+                        {
+                            echo "Already Registered<br>".$goBack;
+                        }
+                        else
+                        {
+                            echo "Done<br>".$goBack;
+                        }
+                    }
+                }
+                else
+                {
+                    echo "Wrong Event Please Check your entries<br>".$goBack;
+                }
+            }
+            else
+            {
+
+                $catInfo = $c->getInfo($_GET['id']);
+                echo "Welcome to <b>{$catInfo['name']}</b> Registeration<br><br>";
+                echo "<form method='POST'>Enter the Deligate Number<br><input type='text' name='delno' /><br><input type='submit' name='reg' value='Register' /></form>";
             }
         }    
         else
         {
-            echo "You do not have Privlage to access this resource<br>".$goBack;
+            echo "You do not have Privlage to access this resource<br>";
         }
     }
     else
     {
-        echo "You do not have Privlage to access this resource<br>".$goBack;
+        echo "You do not have Privlage to access this resource<br>";
     }
 
 }
