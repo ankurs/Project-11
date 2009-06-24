@@ -226,7 +226,8 @@ class Head extends Project11
 		*/
         $new=sha1($this->clean($new).$this->SALT);
         $user=$this->clean($user);
-		mysql_query("update heads set password='{$new}' where username='{$user}'  limit 1",$this->con);
+        // we reset the key so the user get logged out if he/she is logged in
+		mysql_query("update heads set password='{$new}', passkey='' where username='{$user}'  limit 1",$this->con);
 		if (mysql_affected_rows())
 		{
 			return "done";
@@ -252,12 +253,12 @@ class Catagory extends Project11
 
 	}
 
-	public function rem($catname)
+	public function rem($catid)
 	{
 		/* Deletes a catagory from database */
 		/* TODO - remove everything catagory related  with removal of catagory */
-		$catname=strtolower($this->clean($catname));
-		$res = mysql_query("delete from {$this->table} where name like '{$catname}' limit 1",$this->con);
+		$catid=$this->clean($catid);
+		$res = mysql_query("delete from {$this->table} where catid= '{$catid}' limit 1",$this->con);
 		if (mysql_affected_rows())
 		{
 			return "done";
@@ -310,7 +311,7 @@ class Catagory extends Project11
 		}
 	}
 
-	public function getInfo($catid=NULL)
+	public function getInfo($catid)
 	{
 		/* returns array(name,info) for the given ($catid) catagory */
 		$catid = $this->clean($catid);
@@ -322,6 +323,22 @@ class Catagory extends Project11
 		else
 		{
 			return NULL;
+		}
+	}
+
+    public function setInfo($catid,$catinfo)
+	{
+		/* set the info for the given ($catid) catagory */
+		$catid = $this->clean($catid);
+        $catinfo=$this->clean($catinfo);
+		mysql_query("update {$this->table} set info='{$catinfo}' where catid ='{$catid}'",$this->con);
+		if (mysql_affected_rows($this->con))
+		{
+			return "done";
+		}
+		else
+		{
+			return "error";
 		}
 	}
 

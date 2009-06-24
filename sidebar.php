@@ -1,23 +1,25 @@
 <?php
 
-include_once "class.inc.php";
+include_once 'class.inc.php';
 $c=new Catagory();
 echo '<div id="sidebar"><center>';
 $main = new Project11();
 if (isset($_GET['logout']))
 {
-	setcookie("user","Deleted",time()-3600);
-	setcookie("key","Deleted",time()-3600);
+	setcookie('user','Deleted',time()-3600);
+	setcookie('key','Deleted',time()-3600);
 }
-$loginText = "</b><br><form method='POST'>Username<br><input type='text' name='username'><br>Password<br><input type='password' name='password'><br><input type='submit' name='login' value='Login'></form>";
+$loginText = '</b><br><form method="POST">Username<br><input type="text" name="username"><br>Password<br><input type="password" name="password"><br><input type="submit" name="login" value="Login"></form>';
+$level=''; // we want to use level for level check
 if (!isset($_POST['login']))
 {
 	if (True)//TODO check everything here
 	{
-		$level = $main->checkAuth($_COOKIE['user'],$_COOKIE['key']);
-		if ($level!="error" and !isset($_GET['logout']))
+		$userlevel = $main->checkAuth($_COOKIE['user'],$_COOKIE['key']);
+		if ($userlevel!='error' and !isset($_GET['logout']))
 		{
-			echo "Hello <b>{$_COOKIE['user']}</b><br><a href='index.php?logout=1'>log out</a><br><br>";
+            $level = $userlevel; // for check outside sidebar
+			echo 'Hello <b>',$_COOKIE['user'],'</b><br><a href="index.php?logout=1">log out</a><br><br>';
 		}
 		else
 		{
@@ -33,10 +35,11 @@ else
 {
 	$auth=$main->login($_POST['username'],$_POST['password']);
 	if ($auth[0]=="error")
-		echo "<br>Wrong Username/Password<br>".$loginText;
+		echo '<br>Wrong Username/Password<br>',$loginText;
 	else
 	{
-		echo "Welcome <b>{$_POST['username']}</b><br><a href='index.php?logout=1'>log out</a><br><br>";
+        $level = $auth[0];
+		echo 'Welcome <b>',$_POST['username'],'</b><br><a href="index.php?logout=1">log out</a><br><br>';
 		setcookie("user",$_POST['username'],time()+3600);
 		setcookie("key",$auth[1],time()+3600);
 	} 
@@ -47,14 +50,24 @@ echo '<a href="#" onclick="toggleCat()">Registeration</a><br><div id="sidebar-ca
 $catagories = $c->getList();
 foreach ($catagories as $cat)
 {
-	echo "<a href='regcat.php?id={$cat['catid']}'>{$cat['name']}</a><br>";
+	echo '<a href="regcat.php?id=',$cat['catid'],'">',$cat['name'],'</a><br>';
 }
 echo '<br></div><a href="#" onclick="toggleCatInfo()">Information</a><br><div id="sidebar-catagoryinfo"><br>';
 foreach ($catagories as $cat)
 {
-	echo "<a href='catagory.php?id={$cat['catid']}'>{$cat['name']}</a><br>";
+	echo '<a href="catagory.php?id=',$cat['catid'],'">',$cat['name'],'</a><br>';
 }
-echo "<br></div>kjkj";
-
+echo '<br></div><a href="#" onclick="toggleAdmin()">Admin</a><br><div id="sidebar-admin"><br>';
+if ($level== 'admin')
+{
+    echo '<a href="admin.php?do=resetpass">Reset Passowrd</a><br>';
+    echo '<a href="admin.php?do=editcat">Catagory Info</a><br>';
+}
+else
+{
+    echo '<a href="#" onclick="alert(\'No Admin Access for you!!!\')">No Admin Access</a><br>';
+}
 echo '<br></div>';
+
+echo '<br></div>'; // for sidebar
 ?>
