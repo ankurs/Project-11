@@ -5,6 +5,44 @@
 <script src='js/jq.js' type='text/javascript'></script>
 <script src='js/function.js' type='text/javascript' ></script>
 <script type='text/javascript'>
+function checkInput(formname)
+{
+	if (document.getElementsByName("name")[0].value=='')
+	{
+		alert("Please Enter Name");
+		document.getElementsByName("name")[0].focus();
+	}
+	else if (document.getElementsByName("username")[0].value=='')
+	{
+		alert("Please Enter username");
+		document.getElementsByName("username")[0].focus();
+	}
+	else if (document.getElementsByName("phone")[0].value.length<10)
+	{
+		alert("Please Enter Phone Number of atleast 10 numbers\n for landline numbers prefix the are code");
+		document.getElementsByName("phone")[0].focus();
+	}
+	else
+	{
+        checkPassword(formname);
+	}
+}
+function checkAddEventInput()
+{
+    if (document.getElementsByName("name")[0].value=='')
+    {
+        alert("Please Enter a Name");
+    }
+    else if (document.getElementsByName("info")[0].value=='')
+    {
+        alert("Please Enter Information about the Event");
+    }
+    else
+    {    
+        document.getElementsByName("addeventform")[0].submit();
+    }
+}
+
 function checkPassword(formname)
 {
     var pass1 = document.getElementsByName("password1")[0];
@@ -94,6 +132,87 @@ if (isset($_GET['do']) and $level == 'admin')
                 }
             }
         break;
+
+        case 'addhead':
+        // case addhead
+            $h = new Head();
+            if (isset($_POST['addhead']))
+            {
+                if (($_POST['password1'] == $_POST['password2']) and ($_POST['password1'] != ''))
+                {
+                    if ($_POST['username'] and $_POST['name'] and $_POST['level'] and $_POST['phone'])
+                    {
+                        $username = split('[^a-zA-Z0-9_.]',$_POST['username']);//testing username for invalid characters
+                        if ($username[0] == $_POST['username'])
+                        {
+                            $result = $h->add($_POST['username'],$_POST['password'],$_POST['name'],$_POST['phone'],$_POST['level']);
+                            echo $result;
+                        }
+                        else
+                        {
+                            echo 'Username -> <b>',$_POST['username'],'</b> not supported';
+                        }
+                    }
+                    else
+                    {
+                        echo 'Please fill all the information';
+                    }
+                }
+                else
+                {
+                    echo "Passwords dont match";
+                }
+            }
+            else
+            {
+                echo '<form method ="POST" name="addheadform" >Add a new Head<br><table><tr><td>Name</td><td><input type="text" name="name" /></td></tr><tr><td>Username </td><td><input type="text" name="username" ></td></tr><tr><td>Password<td><input type="password" name="password1" /></td></tr><tr><td>Confirm Password</td><td><input type="password" name="password2" /></td></tr><tr><td>Phone</td><td><input type="text" name="phone" /></td></tr><tr><td>Level</td><td>';
+                echo '<select name="level"><option>reg</option><option>chead</option><option>ehead</option><option>org</option><option>vol</option><option>admin</option></select>';
+                echo '</table>     <input type="button"   value="Add" onclick="checkInput(\'addheadform\')"/><input type="hidden" name="addhead" value="addhead" /></form>';
+            }
+        break;
+
+        case 'addevent':
+        // case addevent
+            if (isset($_POST['addevent']))
+            {
+                if (isset($_POST['name']) and isset($_POST['info']) and isset($_POST['team']))
+                {
+                    $e = new Event();
+                    $result = $e->add($_POST['name'],$_POST['team'],$_POST['info']);
+                    echo $result;
+                }
+                else
+                {
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                echo '<form method ="POST" name="addeventform" >Add a new Event<br><table><tr><td>Name</td><td><input type="text" name="name" /></td></tr><tr><td>Info</td><td><textarea name="info" rows="10" cols="50"></textarea></td></tr><tr><td>Team Event</td><td><select name="team"><option>no</option><option>yes</option></select></td></tr></table><input type="button" value="Add" onclick="checkAddEventInput()"/><input type="hidden" name="addevent" value="addevent" /></form>';
+            }
+        break;
+
+        case 'addcat':
+        // case addevent
+            if (isset($_POST['addcat']))
+            {
+                if (isset($_POST['name']) and isset($_POST['info']))
+                {
+                    $c = new Catagory();
+                    $result = $c->add($_POST['name'],$_POST['info']);
+                    echo $result;
+                }
+                else
+                {
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                echo '<form method ="POST" name="addeventform" >Add a new Catagory<br><table><tr><td>Name</td><td><input type="text" name="name" /></td></tr><tr><td>Info</td><td><textarea name="info" rows="10" cols="50"></textarea></td></tr></table><input type="button" value="Add" onclick="checkAddEventInput()"/><input type="hidden" name="addcat" value="addcat" /></form>'; // checkAddEventInput will also work for this
+            }
+        break;
+
     }
     echo '</center>';
 }

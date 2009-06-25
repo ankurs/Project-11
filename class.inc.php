@@ -130,7 +130,7 @@ class Head extends Project11
 		$err = mysql_errno($this->con);
 		if ($err == 1062)
 		{
-			return "exists";
+			return "user <b>{$uname}</b> already exists";
 		}
 		else if ($err == 0)
 		{
@@ -281,7 +281,7 @@ class Catagory extends Project11
 		$err = mysql_errno($this->con);
 		if ($err == 1062)
 		{
-			return "exists";
+			return "Catagory {$catname} already exists";
 		}
 		else if ($err == 0)
 		{
@@ -605,7 +605,7 @@ class Event extends Project11
 		$err = mysql_errno($this->con);
 		if ($err == 1062)
 		{
-			return "exists";
+			return "Event {$name} already exists";
 		}
 		else if ($err == 0)
 		{
@@ -613,7 +613,7 @@ class Event extends Project11
 		}
 		else
 		{
-			return $err;
+			return 'error '.$err;
 		}
 	}
 
