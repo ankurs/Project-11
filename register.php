@@ -95,7 +95,7 @@ if (True)// TODO check everything here
 		{
 			echo "<form name='outform' method='POST'><table width='50%'><tr><td>Name</td><td><input type='text' name='name'></td></tr><tr><td>Sem</td><td><input type='text' name='sem'></td></tr><tr><td>College</td><td><input type='text' name='cllg'></td></tr><tr><td>Phone </td><td><input type='text' name='phone'></td></tr><tr><td><div id='regText' /></div></td><td><input type='hidden' name='regno' /></td></tr><tr><td><center><input type='button' name='regbutton' value='Register' onClick='checkOutInput()'><input type='submit' name='cancel' value='Cancel' /><input type='hidden' name='regout' value='false'/><input type='button' onClick='showReg()' value='Not in DB'/></center></td></tr></table></form>";
 		}
-		else if ($_POST['register']=='true')
+		else if (isset($_POST['register']) and $_POST['register']=='true')
 		{
 			$delno = $r->reg($_POST['regno'],$_POST['phone']);
 			if ($delno[0] == "error")
@@ -105,7 +105,7 @@ if (True)// TODO check everything here
 			else
 				echo "Registered<br><b> Deligate Number - {$delno[0]}</b><br><br>".$goBack;
 		}
-		else if ($_POST['regout']=="true")
+		else if (isset($_POST['regout']) and $_POST['regout']=="true")
 		{
 			if ($_POST['regno']!='0' and isset($_POST['regno']))
 			{

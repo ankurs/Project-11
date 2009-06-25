@@ -73,7 +73,7 @@ if ($level== 'admin')
     echo '<a href="admin.php?do=addevent">Add Event</a><br>';
     echo '<a href="admin.php?do=addcat">Add Catagory</a><br>';
     echo '<a href="admin.php?do=rmhead">Remove Head</a><br>';
-    echo '<a href="admin.php?do=rmeventt">Remove Event</a><br>';
+    echo '<a href="admin.php?do=rmevent">Remove Event</a><br>';
     echo '<a href="admin.php?do=rmcat">Remove Catagory</a><br>';
 }
 else

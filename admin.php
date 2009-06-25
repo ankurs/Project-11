@@ -29,11 +29,27 @@ function checkInput(formname)
 }
 function rmHead()
 {
-    if (confirm("Are you sure you want to remove this user?")) 
+    if (confirm("Are you sure you want to remove this Head?")) 
     {
         document.getElementsByName("rmheadform")[0].submit();    
     }
 }
+function rmEvent()
+{
+    if (confirm("Are you sure you want to remove this Event?")) 
+    {
+        document.getElementsByName("rmeventform")[0].submit();    
+    }
+}
+function rmCat()
+{
+    if (confirm("Are you sure you want to remove this Catagory?")) 
+    {
+        document.getElementsByName("rmcatform")[0].submit();    
+    }
+}
+
+
 function checkAddEventInput()
 {
     if (document.getElementsByName("name")[0].value=='')
@@ -230,7 +246,7 @@ if (isset($_GET['do']) and $level == 'admin')
                     $result = $h->rem($_POST['name']);
                     if ($result =="done")
                     {
-                        echo 'user <b>',$_POST['name'],'</b> removed';
+                        echo 'Head <b>',$_POST['name'],'</b> removed';
                     }
                     else
                     {
@@ -251,6 +267,75 @@ if (isset($_GET['do']) and $level == 'admin')
                     echo '<option>',$head['username'],'</option><br><br>';
                 }
                 echo '</select><br><input type="hidden" name="rmhead" value="rmhead"/><input type="button" value="Remove" onclick="rmHead()" /></form>';
+            }
+        break;
+
+        case 'rmevent':
+        // case rmevent
+            if (isset($_POST['rmevent']))
+            {
+                if (isset($_POST['name']))
+                {
+                    $e = new Event();
+                    $result = $e->rem($_POST['name']);
+                    if ($result =="done")
+                    {
+                        echo 'Event <b>',$_POST['name'],'</b> removed';
+                    }
+                    else
+                    {
+                        echo 'an error occured while trying to remove';
+                    }
+                }
+                else
+                {
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                $e = new Event();
+                echo '<form method="POST" name="rmeventform">Select an Event To Remove<br><select name="name">';
+                foreach($e->getList() as $event)
+                {
+                    echo '<option>',$event['name'],'</option><br><br>';
+                }
+                echo '</select><br><input type="hidden" name="rmevent" value="rmevent"/><input type="button" value="Remove" onclick="rmEvent()" /></form>';
+            }
+        break;
+
+        case 'rmcat':
+        // case rmcat
+            if (isset($_POST['rmcat']))
+            {
+                if (isset($_POST['name']))
+                {
+                    $c = new Catagory();
+                    $c->select($_POST['name']);
+                    $result = $c->rem($c->getId());
+                    if ($result =="done")
+                    {
+                        echo 'Catagory <b>',$_POST['name'],'</b> removed';
+                    }
+                    else
+                    {
+                        echo 'an error occured while trying to remove';
+                    }
+                }
+                else
+                {
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                $c = new Catagory();
+                echo '<form method="POST" name="rmcatform">Select a Catagory To Remove<br><select name="name">';
+                foreach($c->getList() as $cat)
+                {
+                    echo '<option>',$cat['name'],'</option><br><br>';
+                }
+                echo '</select><br><input type="hidden" name="rmcat" value="rmcat"/><input type="button" value="Remove" onclick="rmCat()" /></form>';
             }
         break;
 
