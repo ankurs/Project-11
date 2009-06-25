@@ -15,12 +15,20 @@ $goBack = "<a href='regcat.php?id={$_GET['id']}'>Back</a>";
 $r = new Registeration();
 if (True)//TODO check everything here
 {
-    $level = $r->checkAuth($_COOKIE['user'],$_COOKIE['key']);
+    //$level = $r->checkAuth($_COOKIE['user'],$_COOKIE['key']) ; --CKECK
     if ($level != "error")
     {    $c = new Catagory();
         if (isset($_GET['id']))
             $c->setId($_GET['id']);
-        if (($c->hasPermission($_COOKIE['user'])) or ($level=="admin"))
+            if (isset($_COOKIE['user'])) // for undefined $_COOKIE['user'] warnings
+            {
+                $cookieUser = $_COOKIE['user'];
+            }
+            else
+            {
+                $cookieUser='';
+            }
+        if (($c->hasPermission($cookieUser)) or ($level=="admin"))
         {
             if (isset($_POST['reg']))
             {

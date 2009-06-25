@@ -72,11 +72,10 @@ include "sidebar.php"; ?>
 <center>
 <?php
 $r = new Registeration();
-$goBack = "<a href='{$SERVER['PHP_SELF']}'>Back</a>";
+$goBack = "<a href='{$_SERVER['PHP_SELF']}'>Back</a>";
 
 if (True)// TODO check everything here
 {
-	$level = $r->checkAuth($_COOKIE['user'],$_COOKIE['key']);
 	if ($level=="admin" or $level=="reg")
 	{
 		if (isset($_POST['reg']) and $_POST['regno'] !='')

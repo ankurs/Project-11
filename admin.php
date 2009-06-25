@@ -27,6 +27,13 @@ function checkInput(formname)
         checkPassword(formname);
 	}
 }
+function rmHead()
+{
+    if (confirm("Are you sure you want to remove this user?")) 
+    {
+        document.getElementsByName("rmheadform")[0].submit();    
+    }
+}
 function checkAddEventInput()
 {
     if (document.getElementsByName("name")[0].value=='')
@@ -210,6 +217,40 @@ if (isset($_GET['do']) and $level == 'admin')
             else
             {
                 echo '<form method ="POST" name="addeventform" >Add a new Catagory<br><table><tr><td>Name</td><td><input type="text" name="name" /></td></tr><tr><td>Info</td><td><textarea name="info" rows="10" cols="50"></textarea></td></tr></table><input type="button" value="Add" onclick="checkAddEventInput()"/><input type="hidden" name="addcat" value="addcat" /></form>'; // checkAddEventInput will also work for this
+            }
+        break;
+
+        case 'rmhead':
+        // case rmhead
+            if (isset($_POST['rmhead']))
+            {
+                if (isset($_POST['name']))
+                {
+                    $h = new Head();
+                    $result = $h->rem($_POST['name']);
+                    if ($result =="done")
+                    {
+                        echo 'user <b>',$_POST['name'],'</b> removed';
+                    }
+                    else
+                    {
+                        echo 'an error occured while trying to remove';
+                    }
+                }
+                else
+                {
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                $h = new Head();
+                echo '<form method="POST" name="rmheadform">Select a User To Remove<br><select name="name">';
+                foreach($h->getList() as $head)
+                {
+                    echo '<option>',$head['username'],'</option><br><br>';
+                }
+                echo '</select><br><input type="hidden" name="rmhead" value="rmhead"/><input type="button" value="Remove" onclick="rmHead()" /></form>';
             }
         break;
 

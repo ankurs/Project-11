@@ -15,7 +15,14 @@ if (!isset($_POST['login']))
 {
 	if (True)//TODO check everything here
 	{
-		$userlevel = $main->checkAuth($_COOKIE['user'],$_COOKIE['key']);
+        if (isset($_COOKIE['user']) and isset($_COOKIE['key']))
+        {
+    		$userlevel = $main->checkAuth($_COOKIE['user'],$_COOKIE['key']);
+        }
+        else
+        {
+            $userlevel ='error';
+        }
 		if ($userlevel!='error' and !isset($_GET['logout']))
 		{
             $level = $userlevel; // for check outside sidebar

@@ -147,7 +147,7 @@ class Head extends Project11
 		/* Deletes a head from database */
 		/* TODO - remove everything user related with user removal */
 		$uname=strtolower($this->clean($uname));
-		$res = mysql_query("delete from {$this->table} where username='{$uname}' limit 1",$this->con);
+		$res = mysql_query("delete from {$this->table} where username='{$uname}' limit 1",$this->con) or die(mysql_error());
 		if (mysql_affected_rows())
 		{
 			return "done";
