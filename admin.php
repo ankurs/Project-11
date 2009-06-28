@@ -168,7 +168,7 @@ if (isset($_GET['do']) and $level == 'admin')
                         $username = split('[^a-zA-Z0-9_.]',$_POST['username']);//testing username for invalid characters
                         if ($username[0] == $_POST['username'])
                         {
-                            $result = $h->add($_POST['username'],$_POST['password'],$_POST['name'],$_POST['phone'],$_POST['level']);
+                            $result = $h->add($_POST['username'],$_POST['password1'],$_POST['name'],$_POST['phone'],$_POST['level']);
                             echo $result;
                         }
                         else
@@ -305,40 +305,311 @@ if (isset($_GET['do']) and $level == 'admin')
         break;
 
         case 'rmcat':
-        // case rmcat
-            if (isset($_POST['rmcat']))
+        // case remove catagory
+            if (isset($_POST['rmcat'])) // if a catagory is submited
             {
-                if (isset($_POST['name']))
+                if (isset($_POST['name'])) //if the name of catagory is set
                 {
                     $c = new Catagory();
-                    $c->select($_POST['name']);
-                    $result = $c->rem($c->getId());
+                    $c->select($_POST['name']); // select the catagory to be removed
+                    $result = $c->rem($c->getId()); // delete the catagory
                     if ($result =="done")
                     {
+                        // everything ok
                         echo 'Catagory <b>',$_POST['name'],'</b> removed';
                     }
                     else
                     {
+                        // some error
                         echo 'an error occured while trying to remove';
                     }
                 }
                 else
                 {
+                    // if catagory name was not set
                     echo 'Please check your entries';
                 }
             }
             else
             {
+                // displaying the list of all catagories
                 $c = new Catagory();
                 echo '<form method="POST" name="rmcatform">Select a Catagory To Remove<br><select name="name">';
                 foreach($c->getList() as $cat)
                 {
+                    // name of all catagories in from the DB
                     echo '<option>',$cat['name'],'</option><br><br>';
                 }
+                // we set a hidden input rmcat to rmcat, so that we know we want to remove a catagory
                 echo '</select><br><input type="hidden" name="rmcat" value="rmcat"/><input type="button" value="Remove" onclick="rmCat()" /></form>';
             }
         break;
 
+        case 'cathead':
+        // case -> assign catagory head 
+            if (isset($_POST['cathead'])) // if catagory and head is selected
+            {
+                if (isset($_POST['catname']) and isset($_POST['headname'])) //checking if catagory and head names are set
+                {
+                    $c= new Catagory();
+                    $h= new Head();
+                    if ($c->select($_POST['catname'])) // we try to select the catagory
+                    {
+                        if($h->select($_POST['headname'])) // we try to select the head
+                        {
+                            echo $c->addHead($h->getId()); // assigning the catagory to head
+                        }
+                        else // if we can not select the head
+                        {
+                            echo 'Head Username Does Not Exist';
+                        }
+                    }
+                    else // if we cannot select the catagory
+                    {
+                        echo 'Catagory Does Not Exist';
+                    }
+                }
+                else // if names are not set
+                {   
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                // displaying the list of all catagories and heads
+                $c = new Catagory();
+                $h = new Head();
+                echo '<form method="POST" name="rmcatform">Select a Catagory and Head<br><select name="catname">';
+                foreach($c->getList() as $cat)
+                {
+                    // name of all catagories from the DB
+                    echo '<option>',$cat['name'],'</option>';
+                }
+                echo '</select><br><select name="headname">';
+                foreach($h->getHeads('chead') as $head)
+                {
+                    // name of all catagory heads from the DB
+                    echo '<option>',$head['username'],'</option>';
+                }
+
+                // we set a hidden input cathead to rcathead, so that we know we want to assign a catagory to head
+                echo '</select><br><input type="hidden" name="cathead" value="cathead"/><input type="submit" value="Assign" /></form>';
+            }
+        break;
+
+        case 'eventhead':
+        // case -> assign event head 
+            if (isset($_POST['eventhead'])) // if event and head is selected
+            {
+                if (isset($_POST['eventname']) and isset($_POST['headname'])) //checking if event and head names are set
+                {
+                    $e= new Event();
+                    $h= new Head();
+                    if ($e->select($_POST['eventname'])) // we try to select the event
+                    {
+                        if($h->select($_POST['headname'])) // we try to select the head
+                        {
+                            echo $e->addHead($h->getId(),'head'); // assigning the event to head
+                        }
+                        else // if we can not select the head
+                        {
+                            echo 'Head Username Does Not Exist';
+                        }
+                    }
+                    else // if we cannot select the event
+                    {
+                        echo 'Event Does Not Exist';
+                    }
+                }
+                else // if names are not set
+                {   
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                // displaying the list of all events and heads
+                $e = new Event();
+                $h = new Head();
+                echo '<form method="POST">Select an Event and Head<br><select name="eventname">';
+                foreach($e->getList() as $event)
+                {
+                    // name of all events from the DB
+                    echo '<option>',$event['name'],'</option>';
+                }
+                echo '</select><br><select name="headname">';
+                foreach($h->getHeads('ehead') as $head)
+                {
+                    // name of all event heads from the DB
+                    echo '<option>',$head['username'],'</option>';
+                }
+
+                // we set a hidden input eventhead to eventhead, so that we know we want to assign an event to head
+                echo '</select><br><input type="hidden" name="eventhead" value="eventhead"/><input type="submit" value="Assign" /></form>';
+            }
+        break;
+
+        case 'eventorg':
+        // case -> assign event organiser
+            if (isset($_POST['eventorg'])) // if event and head is selected
+            {
+                if (isset($_POST['eventname']) and isset($_POST['headname'])) //checking if event and head names are set
+                {
+                    $e= new Event();
+                    $h= new Head();
+                    if ($e->select($_POST['eventname'])) // we try to select the event
+                    {
+                        if($h->select($_POST['headname'])) // we try to select the head
+                        {
+                            echo $e->addHead($h->getId(),'org'); // assigning the event to head
+                        }
+                        else // if we can not select the head
+                        {
+                            echo 'Username Does Not Exist';
+                        }
+                    }
+                    else // if we cannot select the event
+                    {
+                        echo 'Event Does Not Exist';
+                    }
+                }
+                else // if names are not set
+                {   
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                // displaying the list of all events and heads
+                $e = new Event();
+                $h = new Head();
+                echo '<form method="POST">Select an Event and Head<br><select name="eventname">';
+                foreach($e->getList() as $event)
+                {
+                    // name of all events from the DB
+                    echo '<option>',$event['name'],'</option>';
+                }
+                echo '</select><br><select name="headname">';
+                foreach($h->getHeads('org') as $head)
+                {
+                    // name of all event organisers from the DB
+                    echo '<option>',$head['username'],'</option>';
+                }
+
+                // we set a hidden input eventorg to eventorg, so that we know we want to assign an event to organiser
+                echo '</select><br><input type="hidden" name="eventorg" value="eventorg"/><input type="submit" value="Assign" /></form>';
+            }
+        break;
+
+        case 'eventvol':
+        // case -> assign event volunteer
+            if (isset($_POST['eventvol'])) // if event and head is selected
+            {
+                if (isset($_POST['eventname']) and isset($_POST['headname'])) //checking if event and head names are set
+                {
+                    $e= new Event();
+                    $h= new Head();
+                    if ($e->select($_POST['eventname'])) // we try to select the event
+                    {
+                        if($h->select($_POST['headname'])) // we try to select the head
+                        {
+                            echo $e->addHead($h->getId(),'vol'); // assigning the event to head
+                        }
+                        else // if we can not select the head
+                        {
+                            echo 'Username Does Not Exist';
+                        }
+                    }
+                    else // if we cannot select the event
+                    {
+                        echo 'Event Does Not Exist';
+                    }
+                }
+                else // if names are not set
+                {   
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                // displaying the list of all events and heads
+                $e = new Event();
+                $h = new Head();
+                echo '<form method="POST">Select an Event and Head<br><select name="eventname">';
+                foreach($e->getList() as $event)
+                {
+                    // name of all events from the DB
+                    echo '<option>',$event['name'],'</option>';
+                }
+                echo '</select><br><select name="headname">';
+                foreach($h->getHeads('vol') as $head)
+                {
+                    // name of all event volunteers from the DB
+                    echo '<option>',$head['username'],'</option>';
+                }
+
+                // we set a hidden input eventvol to eventvol, so that we know we want to assign an event to volunteer
+                echo '</select><br><input type="hidden" name="eventvol" value="eventvol"/><input type="submit" value="Assign" /></form>';
+            }
+        break;
+
+        case 'eventcat':
+        // case -> assign event to catagory
+            if (isset($_POST['eventcat'])) // if event and head is selected
+            {
+                if (isset($_POST['eventname']) and isset($_POST['catname'])) //checking if event and catagory names are set
+                {
+                    $e= new Event();
+                    $c= new Catagory();
+                    if ($e->select($_POST['eventname'])) // we try to select the event
+                    {
+                        if($c->select($_POST['catname'])) // we try to select the catagory
+                        {
+                            echo $c->addEvent($e->getId()); // assigning the event to catagory
+                        }
+                        else // if we can not select the catagory
+                        {
+                            echo 'Catagory Does Not Exist';
+                        }
+                    }
+                    else // if we cannot select the event
+                    {
+                        echo 'Event Does Not Exist';
+                    }
+                }
+                else // if names are not set
+                {   
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                // displaying the list of all events and heads
+                $e = new Event();
+                $c = new Catagory();
+                echo '<form method="POST">Select an Event and Head<br><select name="eventname">';
+                foreach($e->getList() as $event)
+                {
+                    // name of all events from the DB
+                    echo '<option>',$event['name'],'</option>';
+                }
+                echo '</select><br><select name="catname">';
+                foreach($c->getList() as $cat)
+                {
+                    // name of all event catagories from the DB
+                    echo '<option>',$cat['name'],'</option>';
+                }
+
+                // we set a hidden input eventcat to eventcat, so that we know we want to assign an event to Catagory
+                echo '</select><br><input type="hidden" name="eventcat" value="eventcat"/><input type="submit" value="Assign" /></form>';
+            }
+        break;
+
+
+        default:
+            // if none of the above we simply ask to select something
+            echo "Sorry you selected something that does not exist";
+            break;
     }
     echo '</center>';
 }

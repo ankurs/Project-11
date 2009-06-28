@@ -67,6 +67,15 @@ foreach ($catagories as $cat)
 echo '<br></div><a href="#" onclick="toggleAdmin()">Admin</a><br><div id="sidebar-admin"><br>';
 if ($level== 'admin')
 {
+    echo '<a href="#" onclick="toggleAssign()">Do Assignment</a><br>';
+    echo '<div id ="sidebar-assign"><br>';
+    echo '<a href="admin.php?do=cathead">Catagory Head</a><br>';
+    echo '<a href="admin.php?do=eventhead">Event Head</a><br>';
+    echo '<a href="admin.php?do=eventorg">Organiser</a><br>';
+    echo '<a href="admin.php?do=eventvol">Volunteer</a><br>';
+    echo '<a href="admin.php?do=eventcat">Event To Catagory</a><br>';
+    echo '<br></div>';
+
     echo '<a href="admin.php?do=resetpass">Reset Passowrd</a><br>';
     echo '<a href="admin.php?do=editcat">Catagory Info</a><br>';
     echo '<a href="admin.php?do=addhead">Add Head</a><br>';

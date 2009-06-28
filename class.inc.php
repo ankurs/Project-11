@@ -3,11 +3,11 @@
 class Project11
 {
 	// common for all child classes
-	private  $host="localhost"; // Database Host
-	private  $dbname="project11"; // Database Name
-	private  $dbuser="root";  // Database User
-	private  $dbpass="ankur"; // Database Password
-	protected  $SALT = "dcnufeioucreoiwuroi489579847598"; // Salt to be added to password before taking sha1
+	private  $host=""; // Database Host
+	private  $dbname=""; // Database Name
+	private  $dbuser="";  // Database User
+	private  $dbpass=""; // Database Password
+	protected  $SALT = ""; // Salt to be added to password before taking sha1
 
 	protected  $con = NULL; // connection object
 	protected $logintime =1800; // time after which the user has to re login 
@@ -182,7 +182,24 @@ class Head extends Project11
 			return False;
 		}
 	}	
-
+    public function getHeads($type)
+    {
+        //returns an array (nested) of all heads of a particular type 
+        if ($type)
+        {
+            $type= $this->clean($type);
+            $res=mysql_query("select * from {$this->table} where level='{$type}'",$this->con);
+            while($row=mysql_fetch_array($res))
+    		{
+	    		$ret[] = $row;
+    		}
+	    	return $ret;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
 	public function getinfo($hid)
 	{
 		/* returns array(<all info>) for the given headid */
@@ -457,16 +474,16 @@ class Catagory extends Project11
 					$res = mysql_query("insert into cat_head(userid,catid) values('{$hid}','{$this->id}')",$this->con);
 					if (mysql_affected_rows())
 					{
-						return "done";
+						return "Assignment Done";
 					}
 					else
 					{
-						return "error";
+						return "Sorry an Error Occured";
 					}
 				}
 				else
 				{
-					return "assigned";
+					return "Head has already been assigned to a Catagory";
 				}
 			}
 			else
@@ -658,16 +675,16 @@ class Event extends Project11
 						$res = mysql_query("insert into event_{$type}(userid,eventid) values('{$hid}','{$this->id}')",$this->con);
 						if (mysql_affected_rows())
 						{
-							return "done";
+							return "Assigned to the Event";
 						}
 						else
 						{
-							return "error";
+							return "Sorry an Error Occured";
 						}
 					}
 					else
 					{
-						return "assigned";
+						return "Already assigned to some event";
 					}
 				}
 				else
