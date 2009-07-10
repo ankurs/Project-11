@@ -1,6 +1,6 @@
 <html>
 <head>
-<title><?php include "config.php"; echo $Name; ?></title>
+<title><?php include_once "config.php"; echo $Name; ?></title>
 <link rel="stylesheet" href="main.css" type="text/css" />
 <script src='js/jq.js' type='text/javascript'></script>
 <script src='js/function.js' type='text/javascript' ></script>
@@ -86,18 +86,18 @@ function checkPassword(formname)
 <?php include "sidebar.php"; ?>
 <div id="center">
 <?php
-// $level from sidebar after user check
+// $level from sidebar.php after user check
 if (isset($_GET['do']) and $level == 'admin')
 {
     echo '<center>';
     switch ($_GET['do'])
     {
         case 'resetpass':
-        // case resetpass
+        // case for password reset
             $h = new Head();
             if (isset($_POST['resetpass']))
             {
-                if ($_POST['password1'] == $_POST['password2'])
+                if ($_POST['password1'] == $_POST['password2']) // checking if both passwords are equal
                 {
                     if ($h->resetPass($_POST['user'], $_POST['password1']) == "done")
                     {
@@ -125,7 +125,7 @@ if (isset($_GET['do']) and $level == 'admin')
         break;
 
         case 'editcat':
-        //case editcat
+        //case for editing Catagory Info
             $c = new Catagory();
             if (isset($_GET['catid']))
             {
@@ -219,10 +219,18 @@ if (isset($_GET['do']) and $level == 'admin')
         // case addevent
             if (isset($_POST['addcat']))
             {
-                if (isset($_POST['name']) and isset($_POST['info']))
+                if (isset($_POST['name']) and isset($_POST['info']) and isset($_POST['team']))
                 {
                     $c = new Catagory();
-                    $result = $c->add($_POST['name'],$_POST['info']);
+                    if ($_POST['team']== 'yes')
+                    {
+                        $team = 1;
+                    }
+                    else
+                    {
+                        $team=0;
+                    }
+                    $result = $c->add($_POST['name'],$_POST['info'],$team);
                     echo $result;
                 }
                 else
@@ -305,7 +313,7 @@ if (isset($_GET['do']) and $level == 'admin')
         break;
 
         case 'rmcat':
-        // case remove catagory
+        // case -> removing a catagory
             if (isset($_POST['rmcat'])) // if a catagory is submited
             {
                 if (isset($_POST['name'])) //if the name of catagory is set
@@ -602,6 +610,44 @@ if (isset($_GET['do']) and $level == 'admin')
 
                 // we set a hidden input eventcat to eventcat, so that we know we want to assign an event to Catagory
                 echo '</select><br><input type="hidden" name="eventcat" value="eventcat"/><input type="submit" value="Assign" /></form>';
+            }
+        break;
+
+        case 'rmcathead':
+        // case -> remove catagory head 
+            if (isset($_POST['rmcathead'])) // if catagory or head is selected
+            {
+                if (isset($_POST['catname']) or isset($_POST['headname'])) //checking if catagory or head name is set
+                {
+                    $c= new Catagory();
+                    $h= new Head();
+                   // add here 
+                }
+                else // if names are not set
+                {   
+                    echo 'Please check your entries';
+                }
+            }
+            else
+            {
+                // displaying the list of all catagories and heads
+                $c = new Catagory();
+                $h = new Head();
+                echo '<form method="POST" >Select a Catagory or Head<br><select name="catname">';
+                foreach($c->getList() as $cat)
+                {
+                    // name of all catagories from the DB
+                    echo '<option>',$cat['name'],'</option>';
+                }
+                echo '</select><br><select name="headname">';
+                foreach($h->getHeads('chead') as $head)
+                {
+                    // name of all catagory heads from the DB
+                    echo '<option>',$head['username'],'</option>';
+                }
+
+                // we set a hidden input cathead to rcathead, so that we know we want to assign a catagory to head
+                echo '</select><br><input type="hidden" name="cathead" value="cathead"/><input type="submit" value="Assign" /></form>';
             }
         break;
 

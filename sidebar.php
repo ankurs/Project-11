@@ -57,18 +57,27 @@ echo '<a href="#" onclick="toggleCat()">Registeration</a><br><div id="sidebar-ca
 $catagories = $c->getList();
 foreach ($catagories as $cat)
 {
-	echo '<a href="regcat.php?id=',$cat['catid'],'">',$cat['name'],'</a><br>';
+	echo '<a href="regcat.php?id=',$cat['catid'],'">',ucwords($cat['name']),'</a><br>';
 }
 echo '<br></div><a href="#" onclick="toggleCatInfo()">Information</a><br><div id="sidebar-catagoryinfo"><br>';
 foreach ($catagories as $cat)
 {
-	echo '<a href="catagory.php?id=',$cat['catid'],'">',$cat['name'],'</a><br>';
+	echo '<a href="catagory.php?id=',$cat['catid'],'">',ucwords($cat['name']),'</a><br>';
 }
-echo '<br></div><a href="#" onclick="toggleAdmin()">Admin</a><br><div id="sidebar-admin"><br>';
+echo '<br></div><a href="./cbt/">CBT</a><br><a href="#" onclick="toggleAdmin()">Admin</a><br><div id="sidebar-admin"><br>';
 if ($level== 'admin')
 {
     echo '<a href="#" onclick="toggleAssign()">Do Assignment</a><br>';
     echo '<div id ="sidebar-assign"><br>';
+    echo '<a href="admin.php?do=cathead">Catagory Head</a><br>';
+    echo '<a href="admin.php?do=eventhead">Event Head</a><br>';
+    echo '<a href="admin.php?do=eventorg">Organiser</a><br>';
+    echo '<a href="admin.php?do=eventvol">Volunteer</a><br>';
+    echo '<a href="admin.php?do=eventcat">Event To Catagory</a><br>';
+    echo '<br></div>';
+
+    echo '<a href="#" onclick="toggleAssignrm()">Remove Assignment</a><br>';
+    echo '<div id ="sidebar-rmassign"><br>';
     echo '<a href="admin.php?do=cathead">Catagory Head</a><br>';
     echo '<a href="admin.php?do=eventhead">Event Head</a><br>';
     echo '<a href="admin.php?do=eventorg">Organiser</a><br>';

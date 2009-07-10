@@ -1,6 +1,8 @@
 $(function () {
     $("#sidebar-catagory").hide();
     $("#sidebar-catagoryinfo").hide();
+    $("#sidebar-assign").hide();
+    $("#sidebar-rmassign").hide();
     $("#sidebar-admin").hide();
 });
 function toggleCat()
@@ -15,5 +17,13 @@ function toggleAdmin()
 function toggleCatInfo()
 {
     $("#sidebar-catagoryinfo").slideToggle("slow");
+}
+function toggleAssign()
+{
+    $("#sidebar-assign").slideToggle("slow");
+}
+function toggleAssignrm()
+{
+    $("#sidebar-rmassign").slideToggle("slow");
 }
 

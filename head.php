@@ -1,6 +1,6 @@
 <html>
 <head>
-<title><?php include "config.php"; echo $Name; ?></title>
+<title><?php include_once "config.php"; echo $Name; ?></title>
 <link rel="stylesheet" href="main.css" type="text/css" />
 <script src='js/jq.js' type='text/javascript'></script>
 <script src='js/function.js' type='text/javascript' ></script>

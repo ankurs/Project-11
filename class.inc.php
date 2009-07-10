@@ -3,7 +3,7 @@
 class Project11
 {
 	// common for all child classes
-	private  $host=""; // Database Host
+	private  $host="localhost"; // Database Host
 	private  $dbname=""; // Database Name
 	private  $dbuser="";  // Database User
 	private  $dbpass=""; // Database Password
@@ -455,6 +455,19 @@ class Catagory extends Project11
 		return $ret;
 	}
 
+    public function getEventsWithTeam()
+	{
+		/* returns array (nested) of all events of the selected catagory who have team events */
+		$ret = array();
+		$res = mysql_query("select * from events where eventid in (select eventid from cat_event where catid ='{$this->id}') and team='1'",$this->con);
+		while($row=mysql_fetch_array($res))
+		{
+			$ret[] = $row;
+		}
+		return $ret;
+	}
+
+
 	public function addHead($hid)
 	{
 		/* add the given head ($hid) to the selected catagory, returns
@@ -894,7 +907,7 @@ class Registeration extends Project11
 			if ($row)
 			{
 				$ret= array("reg");
-				$ret[] = $reg[0];// if it exists return the delno
+				$ret[] = $row[0];// if it exists return the delno
 				return $ret;
 			}
 		}
