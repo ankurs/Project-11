@@ -108,7 +108,7 @@ if (True)//TODO check everything here
                 $c = new Catagory();
                 $c->setId($_GET['id']);
                 echo '<form method="POST">';
-                // TODO CHEK -- not complete
+                // TODO CHECK -- class Team not complete
                 foreach ($c->getEventsWithTeam() as $event)
                 {
                     echo 'a';

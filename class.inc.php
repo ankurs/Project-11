@@ -3,13 +3,13 @@
 class Project11
 {
 	// common for all child classes
-	private  $host="localhost"; // Database Host
-	private  $dbname=""; // Database Name
-	private  $dbuser="";  // Database User
-	private  $dbpass=""; // Database Password
-	protected  $SALT = ""; // Salt to be added to password before taking sha1
+	private $host="localhost"; // Database Host
+	private $dbname="project11"; // Database Name
+	private $dbuser="root";  // Database User
+	private $dbpass="ankur"; // Database Password
+	protected $SALT = "dcnufeioucreoiwuroi489579847598"; // Salt to be added to password before taking sha1
 
-	protected  $con = NULL; // connection object
+	protected $con = NULL; // connection object
 	protected $logintime =1800; // time after which the user has to re login 
 
 	// different for different child classes 
@@ -29,11 +29,22 @@ class Project11
 		return mysql_real_escape_string($value);
 	}
 
+    protected function query($query)     {
+        /* executes the query and returns the object */
+        return mysql_query($query,$this->con);
+    }
+
+    protected function fetch_row($query)
+    {
+        /* executes the query, fetchs the data and returns a row */
+        return mysql_fetch_row($this->query($query));
+    }
+
 	public function getList()
 	{
 		/* returns array (nested) of all items of particular type from the database */
 		$ret = array();
-		$res = mysql_query("select * from {$this->table}",$this->con);
+		$res = $this->query("select * from {$this->table}");
 		while($row=mysql_fetch_array($res))
 		{
 			$ret[] = $row;
@@ -62,14 +73,14 @@ class Project11
 			array (error)                  -  if wrong password or user does not exist
 		*/
 		$uname = $this->clean($uname);
-		$row=mysql_fetch_row(mysql_query("select password,level from heads where username='{$uname}'",$this->con));
+		$row=$this->fetch_row("select password,level from heads where username='{$uname}'");
 		if ($row)
 		{
 			if ($row[0] == sha1($pass.$this->SALT))
 			{
 				$tval = time();
 				$key = sha1($tval.$this->SALT);
-				$res=mysql_query("update heads set passkey ='{$key}', reset='{$tval}' where username='{$uname}'",$this->con);
+				$res=$this->query("update heads set passkey ='{$key}', reset='{$tval}' where username='{$uname}'");
 				$ret = array();
 				$ret[] = $row[1];
 				$ret[] = $key;
@@ -85,7 +96,7 @@ class Project11
 			error    -  if wrong passkey or user does not exist
 		*/
 		$uname = $this->clean($uname);
-		$row=mysql_fetch_row(mysql_query("select passkey,reset,level from heads where username='{$uname}'",$this->con));
+		$row=$this->fetch_row("select passkey,reset,level from heads where username='{$uname}'");
 		if ($row)
 		{
 			if ($row[0] == $key)
@@ -126,7 +137,7 @@ class Head extends Project11
 		$pass = sha1($this->clean($pass).$this->SALT); // taking sha1 with a salt for password
 		$phone = $this->clean($phone);
 		$level = strtolower($this->clean($level));
-		$res = mysql_query("insert into {$this->table}(username,password,name,level,phone) values('{$uname}','{$pass}','{$name}','{$level}','{$phone}')",$this->con);
+		$res = $this->query("insert into {$this->table}(username,password,name,level,phone) values('{$uname}','{$pass}','{$name}','{$level}','{$phone}')");
 		$err = mysql_errno($this->con);
 		if ($err == 1062)
 		{
@@ -147,7 +158,7 @@ class Head extends Project11
 		/* Deletes a head from database */
 		/* TODO - remove everything user related with user removal */
 		$uname=strtolower($this->clean($uname));
-		$res = mysql_query("delete from {$this->table} where username='{$uname}' limit 1",$this->con) or die(mysql_error());
+		$res = $this->query("delete from {$this->table} where username='{$uname}' limit 1");
 		if (mysql_affected_rows())
 		{
 			return "done";
@@ -168,7 +179,7 @@ class Head extends Project11
 		/* checks if the username exists and sets the id accordingly,
 			returns- True or False */
 		$uname=$this->clean($uname);
-		$row=mysql_fetch_row(mysql_query("select userid,level from {$this->table} where username='{$uname}'",$this->con));
+		$row=$this->fetch_row("select userid,level from {$this->table} where username='{$uname}'");
 		if ($row)
 		{
 			$this->id = $row[0];
@@ -188,7 +199,7 @@ class Head extends Project11
         if ($type)
         {
             $type= $this->clean($type);
-            $res=mysql_query("select * from {$this->table} where level='{$type}'",$this->con);
+            $res=$this->query("select * from {$this->table} where level='{$type}'");
             while($row=mysql_fetch_array($res))
     		{
 	    		$ret[] = $row;
@@ -224,7 +235,7 @@ class Head extends Project11
 		*/
 		$old=sha1($this->clean($old).$this->SALT);
 		$new=sha1($this->clean($new).$this->SALT);
-		mysql_query("update heads set password='{$new}' where userid='{$this->id}' and password ='{$old}' limit 1",$this->con);
+		mysql_query("update heads set password='{$new}' where userid='{$this->id}' and password ='{$old}' limit 1");
 		if (mysql_affected_rows())
 		{
 			return "done";
@@ -315,7 +326,7 @@ class Catagory extends Project11
 		/* checks if the catagory exists and sets the id accordingly,
 			returns- True ot False */
 		$catname=$this->clean($catname);
-		$row=mysql_fetch_row(mysql_query("select catid from {$this->table} where name='{$catname}'",$this->con));
+		$row=$this->fetch_row("select catid from {$this->table} where name='{$catname}'");
 		if ($row)
 		{
 			$this->id = $row[0];
@@ -372,7 +383,7 @@ class Catagory extends Project11
 		{
 			if ($this->id)
 			{
-				$row = mysql_fetch_row(mysql_query("select * from cat_event where eventid = '{$eid}'",$this->con));
+				$row = $this->fetch_row("select * from cat_event where eventid = '{$eid}'");
 				if (!$row)
 				{
 					$res = mysql_query("insert into cat_event(eventid,catid) values('{$eid}','{$this->id}')",$this->con);
@@ -414,7 +425,7 @@ class Catagory extends Project11
 		{
 			if ($this->id)
 			{
-				$row = mysql_fetch_row(mysql_query("select id from cat_event where eventid = '{$eid}' and catid='{$this->id}'",$this->con));
+				$row = $this->fetch_row("select id from cat_event where eventid = '{$eid}' and catid='{$this->id}'");
 				if ($row)
 				{
 					$res = mysql_query("delete from cat_event where id = '{$row[0]}' limit 1",$this->con);
@@ -447,7 +458,7 @@ class Catagory extends Project11
 	{
 		/* returns array (nested) of all events of the selected catagory */
 		$ret = array();
-		$res = mysql_query("select * from events where eventid in (select eventid from cat_event where catid ='{$this->id}')",$this->con);
+		$res = $this->query("select * from events where eventid in (select eventid from cat_event where catid ='{$this->id}')");
 		while($row=mysql_fetch_array($res))
 		{
 			$ret[] = $row;
@@ -459,7 +470,7 @@ class Catagory extends Project11
 	{
 		/* returns array (nested) of all events of the selected catagory who have team events */
 		$ret = array();
-		$res = mysql_query("select * from events where eventid in (select eventid from cat_event where catid ='{$this->id}') and team='1'",$this->con);
+		$res = $this->query("select * from events where eventid in (select eventid from cat_event where catid ='{$this->id}') and team='1'");
 		while($row=mysql_fetch_array($res))
 		{
 			$ret[] = $row;
@@ -481,7 +492,7 @@ class Catagory extends Project11
 		{
 			if ($this->id)
 			{
-				$row = mysql_fetch_row(mysql_query("select * from cat_head where userid = '{$hid}'",$this->con));
+				$row = $this->fetch_row("select * from cat_head where userid = '{$hid}'");
 				if (!$row)
 				{
 					$res = mysql_query("insert into cat_head(userid,catid) values('{$hid}','{$this->id}')",$this->con);
@@ -523,7 +534,7 @@ class Catagory extends Project11
 		{
 			if ($this->id)
 			{
-				$row = mysql_fetch_row(mysql_query("select id from cat_head where userid = '{$hid}' and catid='{$this->id}'",$this->con));
+				$row = $this->fetch_row("select id from cat_head where userid = '{$hid}' and catid='{$this->id}'");
 				if ($row)
 				{
 					$res = mysql_query("delete from cat_head where id = '{$row[0]}' limit 1",$this->con);
@@ -556,7 +567,7 @@ class Catagory extends Project11
 	{
 		/* returns array (nested) of all heads of the selected catagory */
 		$ret = array();
-		$res = mysql_query("select * from heads where userid in (select userid from cat_head where catid ='{$this->id}')",$this->con);
+		$res = $this->query("select * from heads where userid in (select userid from cat_head where catid ='{$this->id}')");
 		while($row=mysql_fetch_array($res))
 		{
 			$ret[] = $row;
@@ -581,7 +592,7 @@ class Catagory extends Project11
 				return True;
 		}
 		//checking for chead
-		$res=mysql_query("select username from heads where userid in (select userid from cat_head where catid='{$this->id}')",$this->con);
+		$res=$this->query("select username from heads where userid in (select userid from cat_head where catid='{$this->id}')");
 		while ($result=mysql_fetch_row($res))
 		{
 			if ($result[0] == $username)
@@ -651,7 +662,7 @@ class Event extends Project11
 	{
 		/* checks if the event exists and sets the id accordingly,
 			returns- True ot False */
-		$row=mysql_fetch_row(mysql_query("select eventid from {$this->table} where name='{$this->clean($event)}'",$this->con));
+		$row=$this->fetch_row("select eventid from {$this->table} where name='{$this->clean($event)}'");
 		if ($row)
 		{
 			$this->id = $row[0];
@@ -682,7 +693,7 @@ class Event extends Project11
 			{
 				if ($this->id)
 				{
-					$row = mysql_fetch_row(mysql_query("select * from event_{$type} where userid = '{$hid}'",$this->con));
+					$row = $this->fetch_row("select * from event_{$type} where userid = '{$hid}'");
 					if (!$row)
 					{
 						$res = mysql_query("insert into event_{$type}(userid,eventid) values('{$hid}','{$this->id}')",$this->con);
@@ -734,7 +745,7 @@ class Event extends Project11
 			{
 				if ($this->id)
 				{
-					$row = mysql_fetch_row(mysql_query("select id from event_{$type} where userid = '{$hid}' and eventid='{$this->id}'",$this->con));
+					$row = $this->fetch_row("select id from event_{$type} where userid = '{$hid}' and eventid='{$this->id}'");
 					if ($row)
 					{
 						$res = mysql_query("delete from event_{$type} where id = '{$row[0]}' limit 1",$this->con);
@@ -777,7 +788,7 @@ class Event extends Project11
 		$type=$this->clean($type);
 		if ($type=="head" or $type=="org" or $type=="vol")
 		{
-			$res = mysql_query("select * from heads where userid in (select userid from event_{$type} where eventid ='{$this->id}')",$this->con);
+			$res = $this->query("select * from heads where userid in (select userid from event_{$type} where eventid ='{$this->id}')");
 			while($row=mysql_fetch_array($res))
 			{
 				$ret[] = $row;
@@ -800,7 +811,7 @@ class Event extends Project11
 		if ($delno and $this->id)
 		{
 			$delno=$this->clean($delno);
-            $res = mysql_query("select * from reg_info where delno='{$delno}' and eventid='{$this->id}'",$this->con);
+            $res = $this->query("select * from reg_info where delno='{$delno}' and eventid='{$this->id}'");
             $row=mysql_fetch_row($res);
             if(!$row)
             {
@@ -837,7 +848,7 @@ class Registeration extends Project11
 			NULL                 - when regno not found
 		*/
 		$regno = $this->clean($regno);
-		$res = mysql_query("select * from student where reg = '{$regno}'",$this->con);
+		$res = $this->query("select * from student where reg = '{$regno}'");
 		$row = mysql_fetch_array($res);
 		if ($row)
 		{
@@ -858,14 +869,13 @@ class Registeration extends Project11
 		$regno = $this->clean($regno);
 		$phone = $this->clean($phone);
 		$cllg = "MIT MANIPAL"; // change if you are not in mit,manipal (move to options TODO)- CHECK
-		$res = mysql_query("select reg,name,sem from student where reg='{$regno}' and reg not in (select regno from reg_user)",$this->con);
+		$res = $this->query("select reg,name,sem from student where reg='{$regno}' and reg not in (select regno from reg_user)");
 		$row=mysql_fetch_row($res);
 		if ($row)
 		{
 			$row[1]=ucwords(strtolower($row[1]));//making first letter of each word capital, to make names proper
-			mysql_query("insert into reg_user(regno,name,sem,cllg,phone) values ('{$row[0]}','{$row[1]}','{$row[2]}','{$cllg}','{$phone}')",$this->con);
-			$res = mysql_query("select delno from reg_user where regno='{$row[0]}' and name='{$row[1]}' and  sem ='{$row[2]}' and cllg='{$cllg}' and phone = '{$phone}'",$this->con);
-			$row=mysql_fetch_row($res);
+			$this->query("insert into reg_user(regno,name,sem,cllg,phone) values ('{$row[0]}','{$row[1]}','{$row[2]}','{$cllg}','{$phone}')");
+			$row = $this->fetch_row("select delno from reg_user where regno='{$row[0]}' and name='{$row[1]}' and  sem ='{$row[2]}' and cllg='{$cllg}' and phone = '{$phone}'");
 			if ($row)
 			{
 				return array($row[0]);
@@ -877,7 +887,7 @@ class Registeration extends Project11
 		}
 		else
 		{
-			$res = mysql_query("select delno from reg_user where regno = '{$regno}'",$this->con);
+			$res = $this->query("select delno from reg_user where regno = '{$regno}'");
 			$row=mysql_fetch_row($res);
 			$ret = array("reg");
 			$ret[] = $row[0];
@@ -902,8 +912,7 @@ class Registeration extends Project11
 		if ($regno !=NULL) // for non existant reg number in database case
 		{
 			$regno = $this->clean($regno);
-			$res = mysql_query("select delno from reg_user where regno = '{$regno}'",$this->con);
-			$row=mysql_fetch_row($res);
+			$row = $this->fetch_row("select delno from reg_user where regno = '{$regno}'");
 			if ($row)
 			{
 				$ret= array("reg");
@@ -915,9 +924,8 @@ class Registeration extends Project11
 		{
 			$regno = "OUT"; // set person as OUT STATION
 		}
-		mysql_query("insert into reg_user(regno,name,sem,cllg,phone) values ('{$regno}','{$name}','{$sem}','{$cllg}','{$phone}')",$this->con);
-		$res = mysql_query("select delno from reg_user where regno='{$regno}' and name='{$name}' and  sem ='{$sem}' and cllg='{$cllg}' and phone = '{$phone}'",$this->con);
-		$row=mysql_fetch_row($res);
+		$this->query("insert into reg_user(regno,name,sem,cllg,phone) values ('{$regno}','{$name}','{$sem}','{$cllg}','{$phone}')");
+		$row = $this->fetch_row("select delno from reg_user where regno='{$regno}' and name='{$name}' and  sem ='{$sem}' and cllg='{$cllg}' and phone = '{$phone}'");
 		if ($row)
 		{
 			return array($row[0]);
@@ -927,15 +935,48 @@ class Registeration extends Project11
 			return array("error");
 		}
 	}
-    function getDelInfo($delno)
+    public function getDelInfo($delno)
     {
         /* takes delegate number as input and returns iformation about him
             array(info)  -- if found
             NULL         -- if not found
         */
         $delno = $this->clean($delno);
-        $res = mysql_query("select * from reg_user where delno='{$delno}'",$this->con);
-        $row = mysql_fetch_array($res);
+        $row = mysql_fetch_array($this->query("select * from reg_user where delno='{$delno}'"));
+        if ($row)
+        {
+            return $row;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+}
+
+
+class Team extends Project11
+{
+    protected $hash; // to store the hash value
+    function __construct()
+    {
+        parent::__construct();
+        $this->id=NULL;
+        $this->hash=NULL;
+    }
+
+    public function create($user)
+    {
+        /* creates a new team id
+         we take the username of the user logged in as a salt for hash
+        ( only one user can login from one username at anygiven time )
+        returns - 
+                array(id,hash) -- when sucess
+                NULL -- when error
+        */
+        $hash = sha1(time()+$user); //the unique team identifier
+        $this->query("insert into teams(hash) values('{$hash}')");
+        $res = $this->fetch_row("select id,hash from teams where hash='{$hash}'");
         if ($row)
         {
             return $row;
@@ -946,7 +987,92 @@ class Registeration extends Project11
         }
     }
 
-}
+    public function select($teamno)
+    {
+        /* selects the given teamno and sets the hash
+           returns-
+                  hash -- when done
+                  NULL -- when not done
+        */
+        $teamno = $this->clean($teamno);
+        $row = $this->fetch_row("select hash from teams where teamno='{$teamno}'");
+        if ($row)
+        {
+            $this->hash=$row[0];
+            return $row[0];
+        }
+        else
+        {
+            return NULL;
+        }
+    }
 
+    public function insert($delno,$hash=NULL)
+    {
+        /* inserts delno into the given or selected hash based on value of $hash
+            returns 
+                    done -- when success
+                    error --  when failure
+        */
+        $delno = $this->clean($delno);
+        if ($hash)
+        {
+            // when $hash is set
+            $hash=$this->clean($hash);
+        }
+        else if($this->hash)
+        {
+            // when $this->hash is set, i.e team selected
+           $hash = $this->hash; 
+        }
+        else
+        {
+            return 'error';
+        }
+        //just insert and test
+        $res = $this->query("insert into team_info(hash,delno) values('{$hash}','{$delno}')");
+        if (mysql_affected_rows($this->con))
+        {
+            return 'done';
+        }
+        else
+        {
+            return 'error';
+        }
+    }
+
+    public function remove($delno,$hash=NULL)
+    {
+         /* deletess delno for the given or selected hash based on value of $hash
+            returns 
+                    done -- when success
+                    error --  when failure
+        */
+        $delno = $this->clean($delno);
+        if ($hash)
+        {
+            // when $hash is set
+            $hash=$this->clean($hash);
+        }
+        else if($this->hash)
+        {
+            // when $this->hash is set, i.e team selected
+           $hash = $this->hash; 
+        }
+        else
+        {
+            return 'error';
+        }
+        $res = $this->query("delete from team_info where hash='{$hash}' and delno='{$delno}' limit 1");
+        if (mysql_affected_rows($this->con))
+        {
+            return 'done';
+        }
+        else
+        {
+            return 'error';
+        }
+    }
+}
 
 ?>
