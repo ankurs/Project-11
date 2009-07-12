@@ -5,9 +5,9 @@ class Project11
 	// common for all child classes
 	private $host="localhost"; // Database Host
 	private $dbname="project11"; // Database Name
-	private $dbuser="root";  // Database User
-	private $dbpass="ankur"; // Database Password
-	protected $SALT = "dcnufeioucreoiwuroi489579847598"; // Salt to be added to password before taking sha1
+	private $dbuser="";  // Database User
+	private $dbpass=""; // Database Password
+	protected $SALT = ""; // Salt to be added to password before taking sha1
 
 	protected $con = NULL; // connection object
 	protected $logintime =1800; // time after which the user has to re login 
@@ -31,13 +31,22 @@ class Project11
 
     protected function query($query)     {
         /* executes the query and returns the object */
-        return mysql_query($query,$this->con);
+        $res = mysql_query($query,$this->con) or dir(mysql_error());
+        return $res;
     }
 
     protected function fetch_row($query)
     {
         /* executes the query, fetchs the data and returns a row */
-        return mysql_fetch_row($this->query($query));
+        $res = $this->query($query);
+        if ($res)
+        {
+            return mysql_fetch_row($res);
+        }
+        else
+        {
+            return NULL;
+        }
     }
 
 	public function getList()
@@ -965,25 +974,46 @@ class Team extends Project11
         $this->hash=NULL;
     }
 
-    public function create($user)
+    public function create($key)
     {
         /* creates a new team id
-         we take the username of the user logged in as a salt for hash
+         we take the username of the user logged as a key for salt in hash
         ( only one user can login from one username at anygiven time )
         returns - 
                 array(id,hash) -- when sucess
                 NULL -- when error
         */
-        $hash = sha1(time()+$user); //the unique team identifier
+        $hash = sha1(time()+$key); //the unique team identifier
         $this->query("insert into teams(hash) values('{$hash}')");
-        $res = $this->fetch_row("select id,hash from teams where hash='{$hash}'");
+        $row = $this->fetch_row("select id,hash from teams where hash='{$hash}'");
         if ($row)
         {
+            $this->select($row[0]);
             return $row;
         }
         else
         {
             return NULL;
+        }
+    }
+
+    public function del($teamno)
+    {
+        /* deletes the team number and removes all the enteries 
+           returns 
+                  done -- when team removed
+                  error -- on error
+        */
+        $teamno = $this->clean($teamno);
+        $row=$this->fetch_row("select hash from team where id='{$teamno}'");
+        if ($row)
+        {
+            $this->query("delete from team_info where hash='{$row[0]}'");
+            $this->query("delete from team where id='{$teamno}'");
+        }
+        else
+        {
+            return 'error';
         }
     }
 
@@ -995,9 +1025,10 @@ class Team extends Project11
                   NULL -- when not done
         */
         $teamno = $this->clean($teamno);
-        $row = $this->fetch_row("select hash from teams where teamno='{$teamno}'");
+        $row = $this->fetch_row("select hash from teams where id='{$teamno}'");
         if ($row)
         {
+            $this->id = $teamno;
             $this->hash=$row[0];
             return $row[0];
         }
@@ -1007,7 +1038,7 @@ class Team extends Project11
         }
     }
 
-    public function insert($delno,$hash=NULL)
+    public function addMember($delno,$hash=NULL)
     {
         /* inserts delno into the given or selected hash based on value of $hash
             returns 
@@ -1041,7 +1072,7 @@ class Team extends Project11
         }
     }
 
-    public function remove($delno,$hash=NULL)
+    public function remMember($delno,$hash=NULL)
     {
          /* deletess delno for the given or selected hash based on value of $hash
             returns 
@@ -1072,6 +1103,71 @@ class Team extends Project11
         {
             return 'error';
         }
+    }
+
+    public function addToEvent($eventid,$teamno=NULL)
+    {
+        /* takes an eventid as input and assigns the selected/given team to the event
+            returns
+                exists -- if it already exists
+                done   -- on sucess
+                error  -- on error
+        */
+        $eventid = $this->clean($eventid);
+        if ($teamno)
+        {
+            $teamno = $this->clean($teamno);
+        }
+        else if ($this->id)
+        {
+            $teamno = $this->id;
+        }
+        else
+        {
+            return 'error';
+        }
+        $row=$this->fetch_row("select * from event_team where eventid='{$eventid}' and teamno='{$teamno}'");
+        if ($row)
+        {
+            return 'exists';
+        }
+        $this->query("insert into event_team values('{$eventid}','{$teamno}')");
+        if (mysql_affected_rows($this->con))
+        {
+            return 'done';
+        }
+        else
+        {
+           return 'wth'; 
+        }
+    }
+
+    public function getMembers($teamno=NULL)
+    {
+        /* gives info of all the team members of the selected/given team
+            returns
+                array(array(<user info>))  --  on sucess
+                array('error')             -- on error
+        */
+        if ($teamno)
+        {
+            $teamno = $this->clean($teamno);
+        }
+        else if ($this->id)
+        {
+            $teamno = $this->id;
+        }
+        else
+        {
+            return array('error');
+        }
+        $res = $this->query("select * from reg_user where delno in (select delno from team_info where hash in (select hash from teams where id = '{$teamno}'))");
+        $val=array();
+        while($row=mysql_fetch_array($res))
+        {
+            $val[]=$row;
+        }
+        return $val;
     }
 }
 
