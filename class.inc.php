@@ -23,11 +23,17 @@ class Project11
 		mysql_select_db($this->dbname,$this->con);
 	}
 
-	protected function clean($value)
+	public function clean($value)
 	{
 		/* short for mysql_real_escape_string(), can do more here if needed */
 		return mysql_real_escape_string($value);
 	}
+
+    public function escape($string)
+    {
+        /* escapes the data being displayed to prevent XSS */
+        return htmlentities($string,ENT_QUOTES,'UTF-8');
+    }
 
     protected function query($query)     {
         /* executes the query and returns the object */

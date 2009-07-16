@@ -38,90 +38,166 @@ if (True)//TODO check everything here
         if (($c->hasPermission($cookieUser)) or ($level=="admin"))
         // if the particular user has permission or if its the admin
         {
-            if (isset($_POST['reg'])) 
-            // if delegate number has been posted
+            if (isset($_POST['go']) and isset($_POST['event']))
             {
-                // we display delegate info and the avaliable events
+                // when the event has been selected
+                $e = new Event();
+                $eventInfo = $e->getInfo($_POST['event']);
+                // display the event info
+                echo '<h3>',ucwords($eventInfo['name']),' Regestration</h3>';
+                if ($e->isTeamEvent($_POST['event']))
+                {
+                    // if the event is a team event we ask user to enter the team number
+                    echo 'Team Event<br />';
+                    echo 'Enter Team number<form method="POST">';
+                    echo '<input type="input" name="teamno" /><br>';
+                    echo '<input type="hidden" name="event" value="',$_POST['event'],'"/>';
+                    echo '<input type="submit" name="regteam" value="Register"/><input type="submit" value="Cancel" />';
+                    echo '</form>';
+                }
+                else
+                {
+                    // if the event is not a team event
+                    echo 'Individual Event<br>';
+                    echo 'Enter Delegate number<form method="POST">';
+                    echo '<input type="input" name="delno" /><br>';
+                    echo '<input type="hidden" name="event" value="',$_POST['event'],'"/>';
+                    echo '<input type="submit" name="regind" value="Register"/><input type="submit" value="Cancel" />';
+                    echo '</form>';
+
+                }
+            }
+            // team reg portion
+            else if (isset($_POST['regteam']) and isset($_POST['teamno']))
+            {
+                // when team number is posted
+                $e = new Event();
+                $eventInfo = $e->getInfo($_POST['event']);
+                //display event name
+                echo '<h3>',ucwords($eventInfo['name']),' Regestration</h3>';
+                $t = new Team();
+                // get list of members in the team
+                $members = $t->getMembers($_POST['teamno']);
+                if ($members)
+                {
+                    // if there are members in the team
+                    echo '<center><table><tr><td>Team No.</td><td>Del No.</td><td>Reg No.</td><td>Name</td><td>Sem</td><td>College</td><td>Phone</td></tr>';
+                    $num =1;
+                    foreach($members as $mem)
+                    {
+                        // to change the color
+                        if ($num%2 ==1)
+                        {
+                            $class ='odd';
+                        }
+                        else
+                        {
+                            $class = 'even';
+                        }
+                        echo "<tr id ='{$class}'><td> {$_POST['teamno']} </td><td> {$mem['delno']} </td><td> {$mem['regno']} </td><td> {$mem['name']} </td><td> {$mem['sem']} </td><td> {$mem['cllg']} </td><td> {$mem['phone']} </td></tr>";
+                        $num+=1;
+                    }
+                    // asking user to confirm
+                    echo '</table></center><br>';
+                    echo '<form method="POST">';
+                    echo '<input type="hidden" name="event" value="',$_POST['event'],'" />';
+                    echo '<input type="hidden" name="teamno" value="',$_POST['teamno'],'" />';
+                    echo '<input type="submit" name="confirm" value="Confirm" /><input type="submit" name="cancel" value="Cancel" />';
+                    echo '</form>';
+                }
+                else
+                {
+                    // if there is some error with team
+                    echo 'Please check the entered team number<br>'.$goBack;
+                }
+            }
+            else if (isset($_POST['confirm']) and isset($_POST['teamno']) and isset($_POST['event']))
+            {
+                // when team is confirmed
+                $t = new Team();
+                $action = $t->addToEvent($_POST['event'],$_POST['teamno']);
+                if ($action == 'exists')
+                {
+                    echo 'Team already assigned to Event<br>',$goBack;
+                }
+                else if ($action == 'done')
+                {
+                    echo 'Done<br>',$goBack;
+                }
+                else
+                {
+                    echo 'Sorry some error occured<br>',$goBack;
+                }
+
+            }
+            // individual reg portion
+            else if (isset($_POST['regind']) and isset($_POST['delno']))
+            {
+                $e = new Event();
+                $eventInfo = $e->getInfo($_POST['event']);
+                //display event name
+                echo '<h3>',ucwords($eventInfo['name']),' Regestration</h3>';
                 $r= new Registeration();
-                $c = new Catagory();
                 $delInfo = $r->getDelInfo($_POST['delno']);
                 if ($delInfo)
                 {
                     // if we have info of the selected delegate number
                     echo "<form method='POST'><center><table>";
-                    echo "<tr><td>Del no</td><td> {$delInfo['delno']}</td></tr><tr><td>Name</td><td> {$delInfo['name']}</td></tr><tr><td>College</td><td> {$delInfo['cllg']}</td></tr><tr><td>Phone</td><td> {$delInfo['phone']}</td></tr><tr><td>Select Event</td></tr><tr><td><input type='hidden' name='delno' value='{$delInfo['delno']}' />";
-                    $c->setId($_GET['id']);
-                    $count =0;
-                    $events = $c->getEvents();
-                    foreach ($events as $event) 
+                    echo "<tr><td>Del no</td><td> {$delInfo['delno']}</td></tr><tr><td>Reg No.</td><td>{$delInfo['regno']}</td></tr><tr><td>Name</td><td> {$delInfo['name']}</td></tr><tr><td>College</td><td> {$delInfo['cllg']}</td></tr><tr><td>Phone</td><td> {$delInfo['phone']}</td></tr></table><input type='hidden' name='delno' value='{$delInfo['delno']}' /><input type='hidden' name='event' value='{$_POST['event']}' />";
+                    echo '<br>Confirm Registeration<br><input type="submit" name="confirm" value="Confirm"/><input type="submit" name="cancel" value="Cancel" />';
+                    echo '</center></form>';
+                }
+                else
+                {
+                    echo 'Sorry the Delegate Number does not exists';
+                }
+            }   
+            else if (isset($_POST['event']) and isset($_POST['delno']) and isset($_POST['confirm']))
+            {
+                $e = new Event();
+                $e->setId($_POST['event']);
+                $result = $e->addUser($_POST['delno']);
+                if ($result)
+                {
+                    // if we have a result
+                    if ($result == "regDone")
                     {
-                        echo "<input type='radio' name='event' value='{$event['eventid']}' \> </td><td>{$event['name']}</td></tr><tr><td>";
-                    }
-                    echo '</td></tr></table>'; // closing the table
-                    if ($events)
-                    // if any event is assigned we allow it to registered
-                    {
-                     echo "<input type='submit' name='eventreg' value='Register' /><input type='submit' value='Cancel' /></form></center>";
+                        echo "Already Registered<br>".$goBack;
                     }
                     else
-                    // if there was no event assigned to catagory
                     {
-                       echo '<br> No Event Assigned</form></center>'; 
+                        echo "Done<br>".$goBack;
                     }
                 }
-                else
-                {
-                    // if we dont have info of delegate number
-                    echo "Sorry Wrong Delegate Number<br>".$goBack;
-                }
-            }
-            else if (isset($_POST['eventreg'])) // if we have selected event to be registered
-            {
-                // register the delegate against the selected event
-                $e= new Event();
-                if (isset($_POST['event']) and isset($_POST['delno']))
-                {
-                    $e->setId($_POST['event']);
-                    $result = $e->addUser($_POST['delno']);
-                    if ($result)
-                    {
-                        // if we have a result
-                        if ($result == "regDone")
-                        {
-                            echo "Already Registered<br>".$goBack;
-                        }
-                        else
-                        {
-                            echo "Done<br>".$goBack;
-                        }
-                    }
-                }
-                else
-                {
-                    // we say wrong event because we, delegate info has to be there if we reach this step
-                    echo "Wrong Event Please Check your entries<br>".$goBack;
-                }
-            }
-            else if (isset($_POST['team']))
-            // if we want the team info
-            {
-                $c = new Catagory();
-                $c->setId($_GET['id']);
-                echo '<form method="POST">';
-                // TODO CHECK -- class Team not complete
-                foreach ($c->getEventsWithTeam() as $event)
-                {
-                    echo 'a';
-                }
-            }
+            } 
             else
             // kind of a default case
             {
+                $c = new Catagory();
+                //get the catagory info
                 $catInfo = $c->getInfo($_GET['id']);
                 if ($catInfo)
                 {
+                    // if catagoty present display welcome message
                     echo 'Welcome to <b>',ucwords($catInfo['name']),'</b> Registeration<br><br>';
-                    echo "<form method='POST'>Enter the Deligate Number<br><input type='text' name='delno' /><br><input type='submit' name='reg' value='Register' /><input type='submit' name='team' value='Team' /></form>";
+                    $c->setId($_GET['id']);
+                    //get all events in catagory
+                    $events = $c->getEvents();
+                    if ($events)
+                    {
+                        // if there are events display them
+                        echo "<form method='POST'><center><table>";
+                        foreach ($events as $event) 
+                        {
+                            echo "<tr><td><input type='radio' name='event' value='{$event['eventid']}' \></td><td>{$event['name']}</td></tr>";
+                        }
+                        echo '</table><input type="submit" name="go" value="Go" /></center></form>';
+                    }
+                    else
+                    {
+                        // if no events present display error
+                        echo 'Sorry no Events assigned';
+                    }
                 }
                 else
                 {

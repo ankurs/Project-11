@@ -107,7 +107,7 @@ if ($level != 'error')
                     {
                         echo '<h3>',ucwords($eventInfo['name']),' Registeration Details</h3>';
                         echo '<center><table>';
-                        echo "<tr><td>Sr No.</td><td>Team No.</td><td><a href='details.php?eid={$_GET['eid']}&order=delno'>Del No.</a></td><td><a href='details.php?eid={$_GET['eid']}&order=regno'>Reg No.</a></td><td><a href='details.php?eid={$_GET['eid']}&order=name'>Name</a></td><td><a href='details.php?eid={$_GET['eid']}&order=sem'>Sem</a></td><td><a href='details.php?eid={$_GET['eid']}&order=college'>College</a></td><td><a href='details.php?eid={$_GET['eid']}&order=phone'>Phone</a></td></tr>";
+                        echo "<tr><td>Sr No.</td><td>Team No.</td><td>Del No.</td><td>Reg No.</td><td>Name</td><td>Sem</td><td>College</td><td>Phone</td></tr>";
                         $num =1;
                         foreach ($teams as $team)
                         {

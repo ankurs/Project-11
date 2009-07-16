@@ -67,7 +67,7 @@ foreach ($catagories as $cat)
 {
 	echo '<a href="catagory.php?id=',$cat['catid'],'">',ucwords($cat['name']),'</a><br>';
 }
-echo '<br></div><a href="./cbt/">CBT</a><br><a href="details.php">Details</a><br><a href="#" onclick="toggleAdmin()">Admin</a><br><div id="sidebar-admin"><br>';
+echo '<br></div><a href="details.php">Reg Details</a><br><a href="#" onclick="toggleAdmin()">Admin</a><br><div id="sidebar-admin"><br>';
 if ($level== 'admin')
 {
     echo '<a href="#" onclick="toggleAssign()">Do Assignment</a><br>';
@@ -101,7 +101,7 @@ else
 {
     echo '<a href="#" onclick="alert(\'No Admin Access for you!!!\')">No Admin Access</a><br>';
 }
-echo '<br></div>';
+echo '<br></div><br><a href="./cbt/">CBT</a><br>';
 
 echo '<br></div>'; // for sidebar
 ?>
