@@ -44,6 +44,17 @@
         width:60%;
         text-align: justify;
 }
+#even{
+        background-color:#B7EB87;
+}
+#even:hover { background-color: #84B854; } 
+
+#odd{
+        background-color:#D9FCA9;
+}
+#odd:hover { background-color: #84B854; } 
+
+#team {background-color: #84B854;}
 
 .footer{
 	height: 4%;

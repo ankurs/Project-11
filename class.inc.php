@@ -5,9 +5,9 @@ class Project11
 	// common for all child classes
 	private $host="localhost"; // Database Host
 	private $dbname="project11"; // Database Name
-	private $dbuser="";  // Database User
-	private $dbpass=""; // Database Password
-	protected $SALT = ""; // Salt to be added to password before taking sha1
+	private $dbuser="root";  // Database User
+	private $dbpass="ankur"; // Database Password
+	protected $SALT = "dcnufeioucreoiwuroi489579847598"; // Salt to be added to password before taking sha1
 
 	protected $con = NULL; // connection object
 	protected $logintime =1800; // time after which the user has to re login 
@@ -98,6 +98,7 @@ class Project11
 		}
 		return array("error");
 	}
+
 	public  function checkAuth($uname,$key)
 	{
 		/* checking user for correct passkey returns
@@ -642,16 +643,18 @@ class Event extends Project11
 		}
 	}
 
-	public function add($name,$team,$info)
+	public function add($name,$team,$info,$min_mem =1,$max_mem=1 )
 	{
 		/* adds a event to the database and returns
 			exists       - when username exists
 			<errorcode>  - when an error
 			done         - when user was added */
-		$name = strtolower($this->clean($name)); //we convert the username to lowercase
+		$name = strtolower($this->clean($name)); //we convert the event name to lowercase
 		$team = $this->clean($team);
 		$info = $this->clean($info);
-		$res = mysql_query("insert into {$this->table}(name,team,info) values('{$name}','{$team}','{$info}')",$this->con);
+        $min_mem=$this->clean($min_mem);
+        $max_mem=$this->clean($max_mem);
+		$res = mysql_query("insert into {$this->table}(name,team,info,min_team_mem,max_team_mem) values('{$name}','{$team}','{$info}','{$min_mem}','{$max_mem}')",$this->con);
 		$err = mysql_errno($this->con);
 		if ($err == 1062)
 		{
@@ -834,6 +837,58 @@ class Event extends Project11
 			{
 				return "regDone";
 			}
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+
+    public function isTeamEvent($eventid=NULL)
+    {
+        /* checks if selected/given event is team event or not and returns
+            True  -- if team event
+            False -- if not team event
+            NULL  -- on error
+        */
+        if ($eventid)
+        {
+            $eventid = $this->clean($eventid);
+        }
+        else if ($this->id)
+        {
+            $eventid = $this->id;
+        }
+        else
+        {
+            return NULL;
+        }
+        $row = $this->fetch_row("select team from events where eventid='{$eventid}'");
+        if ($row)
+        {
+            if ($row[0] == 1)
+            {
+                return True;
+            }
+            else
+            {
+                return False;
+            }
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+
+    public function getInfo($eventid)
+	{
+		/* returns array(name,info) for the given ($eventid) event */
+		$eventid = $this->clean($eventid);
+		$row=mysql_fetch_array(mysql_query("select * from {$this->table} where eventid ='{$eventid}'",$this->con));
+		if ($row)
+		{
+			return $row;
 		}
 		else
 		{
@@ -1072,6 +1127,26 @@ class Team extends Project11
         }
     }
 
+    public function totalMembers($teamno)
+    {
+        if ($teamno)
+        {
+            // when $teamno is set
+            $teamno=$this->clean($teamno);
+        }
+        else if($this->id)
+        {
+            // when $this->id is set, i.e team selected
+           $teamno = $this->id; 
+        }
+        else
+        {
+            return 'error';
+        }
+        $row=$this->fetch_row("select count(delno) from team_info where hash in (select hash from teams where id ='{$teamno}')");
+        return $row[0];
+    }
+
     public function remMember($delno,$hash=NULL)
     {
          /* deletess delno for the given or selected hash based on value of $hash
@@ -1105,6 +1180,35 @@ class Team extends Project11
         }
     }
 
+    public function inRange($eventid,$teamno=NULL)
+    {
+        /* checks if number of members in team are within the range
+            returns
+                True -- when in range
+                max -- if more then max
+                min -- if less then min
+        */
+         // get minimum members in a team
+        $min = $this->getMinMembers($eventid);
+        // get maximum members in a team
+        $max = $this->getMaxMembers($eventid);
+        // get current number of members in team
+        $num = $this->totalMembers($teamno);
+        if($num<$min)
+        {
+            return 'mix';
+        }
+        if ($num>$max)
+        {
+            return 'max';
+        }
+        else
+        {
+            return True;
+        }
+       
+    }
+
     public function addToEvent($eventid,$teamno=NULL)
     {
         /* takes an eventid as input and assigns the selected/given team to the event
@@ -1126,19 +1230,64 @@ class Team extends Project11
         {
             return 'error';
         }
-        $row=$this->fetch_row("select * from event_team where eventid='{$eventid}' and teamno='{$teamno}'");
-        if ($row)
+        $range = $this->inRange($eventid,$teamno);
+        if ( $range == True)
         {
-            return 'exists';
+            $row=$this->fetch_row("select * from event_team where eventid='{$eventid}' and teamno='{$teamno}'");
+            if ($row)
+            {
+                return 'exists';
+            }
+            $this->query("insert into event_team values('{$eventid}','{$teamno}')");
+            if (mysql_affected_rows($this->con))
+            {
+                return 'done';
+            }
+            else
+            {
+               return 'error'; 
+            }
         }
-        $this->query("insert into event_team values('{$eventid}','{$teamno}')");
+        else
+        {
+            return $range;
+        }
+    }
+
+    public function removeFromEvent($eventid,$teamno=NULL)
+    {
+        /* takes an eventid as input and removes the selected/given team from the event
+            returns
+                not exist -- if it is not assigned
+                done   -- on sucess
+                error  -- on error
+        */
+        $eventid = $this->clean($eventid);
+        if ($teamno)
+        {
+            $teamno = $this->clean($teamno);
+        }
+        else if ($this->id)
+        {
+            $teamno = $this->id;
+        }
+        else
+        {
+            return 'error';
+        }
+        $row=$this->fetch_row("select * from event_team where eventid='{$eventid}' and teamno='{$teamno}'");
+        if (!$row)
+        {
+            return 'not exist';
+        }
+        $this->query("delete from event_team where eventid = '{$eventid}' and teamno='{$teamno}' limit 1");
         if (mysql_affected_rows($this->con))
         {
             return 'done';
         }
         else
         {
-           return 'wth'; 
+            return 'error'; 
         }
     }
 
@@ -1169,6 +1318,143 @@ class Team extends Project11
         }
         return $val;
     }
+
+    public function getMinMembers($eventid)
+    {
+        /* gets the minimum number of team members allowed in an event 
+            returns 
+                number -- when number found
+                NULL  -- when error
+        */
+        $eventid = $this->clean($eventid);
+        $row = $this->fetch_row("select min_team_mem from events where eventid='{$eventid}'");
+        return $row[0];
+    }
+
+    public function getMaxMembers($eventid)
+    {
+        /* gets the minimum number of team members allowed in an event 
+            returns 
+                number -- when number found
+                NULL  -- when error
+        */
+        $eventid = $this->clean($eventid);
+        $row = $this->fetch_row("select max_team_mem from events where eventid='{$eventid}'");
+        return $row[0];
+    }
+
+    public function assignedToEvent($eventid)
+    {
+        /* gives the team numbers of all teams in given event ($eventid) 
+            returns
+                array(<team num>)  -- when found
+                array()               -- when no teams found
+        */
+        $eventid=$this->clean($eventid);
+        $res = $this->query("select teamno from event_team where eventid='{$eventid}'");
+        $retVal=array();
+        while($row=mysql_fetch_row($res))
+        {
+            $retVal[]=$row[0];
+        }
+        return $retVal;
+    }
 }
 
+class View extends Project11
+{
+    function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function getRegInfo($orderby=NULL)
+    {
+        /* gives the info of all the regestered users as nested array 
+           if orderby is set result is ordered by that value
+           values of orderby -> { name, phone, regno, college, sem }
+        */
+        switch ($orderby)
+        {
+            // we switch by orderby and then just change the query accordingly
+            case 'name':
+                $query = "select * from reg_user order by name asc";
+                break;
+
+            case 'phone':
+                $query = "select * from reg_user order by phone asc";
+                break;
+
+            case 'regno':
+                $query = "select * from reg_user order by regno asc";
+                break;
+
+            case 'college':
+                $query = "select * from reg_user order by cllg asc";
+                break;
+            
+            case 'sem':
+                $query = "select * from reg_user order by sem asc";
+                break;
+
+            default:
+                $query = "select * from reg_user";
+                break;
+        }
+        $res = $this->query($query);
+        $retVal=array();
+        while ($row=mysql_fetch_array($res))
+        {
+            $retVal[]=$row;
+        }
+        return $retVal;
+    }
+
+    public function eventRegInfo($eventid,$orderby=NULL)
+    {
+        /* gives the info of all the regestered users as nested array for a particular eventid
+           if orderby is set result is ordered by that value
+           values of orderby -> { name, phone, regno, college, sem }
+        */
+        $eventid = $this->clean($eventid);
+        switch ($orderby)
+        {
+            // we switch by orderby and then just change the query accordingly
+            case 'name':
+                $query = "select * from reg_user where delno in (select delno from reg_info where eventid = '{$eventid}') order by name asc";
+                break;
+
+            case 'phone':
+                $query = "select * from reg_user where delno in (select delno from reg_info where eventid = '{$eventid}') order by phone asc";
+                break;
+
+            case 'regno':
+                $query = "select * from reg_user where delno in (select delno from reg_info where eventid = '{$eventid}') order by delno asc";
+                break;
+
+            case 'college':
+                $query = "select * from reg_user where delno in (select delno from reg_info where eventid = '{$eventid}') order by cllg asc";
+                break;
+            
+            case 'sem':
+                $query = "select * from reg_user where delno in (select delno from reg_info where eventid = '{$eventid}') order by sem asc";
+                break;
+
+            default:
+                $query = "select * from reg_user where delno in (select delno from reg_info where eventid = '{$eventid}')";
+                break;
+        }
+        $res = $this->query($query);
+        $retVal=array();
+        while ($row=mysql_fetch_array($res))
+        {
+            $retVal[]=$row;
+        }
+        return $retVal;
+    }
+
+}
+
+$t = new Team();
+//echo $t->totalMembers(1);
 ?>

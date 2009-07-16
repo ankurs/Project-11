@@ -25,7 +25,6 @@ if (!isset($_POST['login']))
         }
 		if ($userlevel!='error' and !isset($_GET['logout']))
 		{
-            $level = $userlevel; // for check outside sidebar
 			echo 'Hello <b>',$_COOKIE['user'],'</b><br><a href="index.php?logout=1">log out</a><br><br>';
 		}
 		else
@@ -37,12 +36,16 @@ if (!isset($_POST['login']))
 	{
 		echo $loginText;
 	}
+    $level = $userlevel; // for check outside sidebar
 }
 else
 {
 	$auth=$main->login($_POST['username'],$_POST['password']);
 	if ($auth[0]=="error")
+    {
 		echo '<br>Wrong Username/Password<br>',$loginText;
+        $level = 'error';
+    }
 	else
 	{
         $level = $auth[0];
@@ -64,7 +67,7 @@ foreach ($catagories as $cat)
 {
 	echo '<a href="catagory.php?id=',$cat['catid'],'">',ucwords($cat['name']),'</a><br>';
 }
-echo '<br></div><a href="./cbt/">CBT</a><br><a href="#" onclick="toggleAdmin()">Admin</a><br><div id="sidebar-admin"><br>';
+echo '<br></div><a href="./cbt/">CBT</a><br><a href="details.php">Details</a><br><a href="#" onclick="toggleAdmin()">Admin</a><br><div id="sidebar-admin"><br>';
 if ($level== 'admin')
 {
     echo '<a href="#" onclick="toggleAssign()">Do Assignment</a><br>';
