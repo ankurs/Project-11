@@ -14,7 +14,10 @@ function qShow(num)
 function qNext()
 {
     // show the next question
-    qShow(qNumber+1);
+    if (qNumber<MAXNUM)
+    {
+        qShow(qNumber+1);
+    }
 }
 function qPrev()
 {
@@ -41,4 +44,8 @@ function qMarkBlue(num)
 function qMarkClear(num)
 {
     $(".ql-"+num).css("background-color","");
+}
+function optionClear(name)
+{
+    $('#'+name+' :radio').attr('checked',false);
 }
