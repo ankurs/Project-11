@@ -44,6 +44,11 @@
         width:60%;
         text-align: justify;
 }
+
+#wrapQ {
+        width:60%;
+        text-align: center;
+}
 #even{
         background-color:#B7EB87;
 }

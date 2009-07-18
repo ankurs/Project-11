@@ -50,6 +50,11 @@ function checkOutInput()
 		alert("Please Enter Phone Number of atleast 10 numbers\n for landline numbers prefix the are code");
 		document.getElementsByName("phone")[0].focus();
 	}
+    else if (document.getElementsByName("phone")[0].value.length>12)
+	{
+		alert("Please Enter Phone Number of atleast 10 numbers\n for landline numbers prefix the are code");
+		document.getElementsByName("phone")[0].focus();
+	}
 	else
 	{
 		document.getElementsByName("regout")[0].value="true";
@@ -107,8 +112,10 @@ if (True)// TODO check everything here
 		}
 		else if (isset($_POST['regout']) and $_POST['regout']=="true")
 		{
-			if ($_POST['regno']!='0' and isset($_POST['regno']))
+			if (isset($_POST['regno']) and $_POST['regno']!='')
 			{
+                echo 'hello';
+                echo $_POST['regno'];
 				$result = $r->regOut($_POST['name'],$_POST['sem'],$_POST['cllg'],$_POST['phone'],$_POST['regno']);
 			}
 			else

@@ -4,10 +4,10 @@ class Project11
 {
 	// common for all child classes
 	private $host="localhost"; // Database Host
-	private $dbname="project11"; // Database Name
-	private $dbuser="root";  // Database User
-	private $dbpass="ankur"; // Database Password
-	protected $SALT = "dcnufeioucreoiwuroi489579847598"; // Salt to be added to password before taking sha1
+	private $dbname=""; // Database Name
+	private $dbuser="";  // Database User
+	private $dbpass=""; // Database Password
+	protected $SALT = ""; // Salt to be added to password before taking sha1
 
 	protected $con = NULL; // connection object
 	protected $logintime =1800; // time after which the user has to re login 
@@ -403,7 +403,7 @@ class Catagory extends Project11
 				if (!$row)
 				{
 					$res = mysql_query("insert into cat_event(eventid,catid) values('{$eid}','{$this->id}')",$this->con);
-					if (mysql_affected_rows())
+					if (mysql_affected_rows($this->con))
 					{
 						return "done";
 					}
@@ -944,7 +944,8 @@ class Registeration extends Project11
 		if ($row)
 		{
 			$row[1]=ucwords(strtolower($row[1]));//making first letter of each word capital, to make names proper
-			$this->query("insert into reg_user(regno,name,sem,cllg,phone) values ('{$row[0]}','{$row[1]}','{$row[2]}','{$cllg}','{$phone}')");
+            $password = rand(10000,100000);
+			$this->query("insert into reg_user(regno,name,sem,cllg,phone,password) values ('{$row[0]}','{$row[1]}','{$row[2]}','{$cllg}','{$phone}','{$password}')");
 			$row = $this->fetch_row("select delno from reg_user where regno='{$row[0]}' and name='{$row[1]}' and  sem ='{$row[2]}' and cllg='{$cllg}' and phone = '{$phone}'");
 			if ($row)
 			{
@@ -979,7 +980,7 @@ class Registeration extends Project11
 		$sem=$this->clean($sem);
 		$cllg=$this->clean($cllg);
 		$phone=$this->clean($phone);
-		if ($regno !=NULL) // for non existant reg number in database case
+		if ($regno !=NULL and $regno!='') // for non existant reg number in database case
 		{
 			$regno = $this->clean($regno);
 			$row = $this->fetch_row("select delno from reg_user where regno = '{$regno}'");
@@ -994,7 +995,8 @@ class Registeration extends Project11
 		{
 			$regno = "OUT"; // set person as OUT STATION
 		}
-		$this->query("insert into reg_user(regno,name,sem,cllg,phone) values ('{$regno}','{$name}','{$sem}','{$cllg}','{$phone}')");
+        $password = rand(10000,100000);
+		$this->query("insert into reg_user(regno,name,sem,cllg,phone,password) values ('{$regno}','{$name}','{$sem}','{$cllg}','{$phone}','{$password}')");
 		$row = $this->fetch_row("select delno from reg_user where regno='{$regno}' and name='{$name}' and  sem ='{$sem}' and cllg='{$cllg}' and phone = '{$phone}'");
 		if ($row)
 		{
@@ -1461,6 +1463,215 @@ class View extends Project11
 
 }
 
-$t = new Team();
-//echo $t->totalMembers(1);
+class CBT extends Project11
+{
+    function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function getId($eventid)
+    {
+        /* gives the ID for CBT of the paticular eventid 
+            returns 
+                <id> -- on sucess
+                -1   -- on error
+        */
+        $row = $this->fetch_row("select id from cbt where eventid='{$eventid}'");
+        if ($row)
+        {
+            return $row[0];
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+    public function getEventid($id)
+    {
+         /* gives the eventid  of the paticular id
+            returns 
+                <eventid> -- on sucess
+                -1   -- on error
+        */
+        $row = $this->fetch_row("select id from cbt where eventid='{$eventid}'");
+        if ($row)
+        {
+            return $row[0];
+        }
+        else
+        {
+            return -1;
+        }
+       
+    }
+
+    public function getStatus($id)
+    {
+        /* gives the status of the particular event
+            returns
+                <status>  -- on sucess
+                -1        -- on error
+        */
+        $id = $thid->clean($id);
+        $row = $this->fetch_row("select status from cbt where id ='{$id}'");
+        if ($row)
+        {
+            return $row[0]; 
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+    public function setStatus($id,$status)
+    {
+        /* sets the status of the particular event to $status
+            returns
+                True  -- on sucess
+                Flase -- on error
+        */
+        $id = $this->clean($id);
+        $status = $this->clean($status);
+        $res = $this->query("update cbt set status = '{$status}' where id ='{$id}'");
+        if (mysql_affected_rows($this->con))
+        {
+            return True; 
+        }
+        else
+        {
+            return False;
+        }
+    }
+
+    public function addQuestion($question,$opt1,$opt2,$opt3,$opt4,$copt,$id)
+    {
+        /* adds question to the database for a particular event
+           returns  
+            done -- when done
+            error -- on error
+        */
+        $question = $this->clean($question);
+        $opt1 = $this->clean($opt1);
+        $opt2 = $this->clean($opt2);
+        $opt3 = $this->clean($opt3);
+        $opt4 = $this->clean($opt4);
+        $copt = $this->clean($copt);
+        $eventid = $this->clean($eventid);
+        $res = $this->query("insert into questions(id,question,opt1,opt2,opt3,opt4,copt) values('{$id}','{$question}','{$opt1}','{$opt2}','{$opt3}','{$opt4}','{$copt}')");
+        if (mysql_affected_rows($this->con))
+        {
+            return 'done';
+        }
+        else
+        {
+            return 'error';
+        }
+    }
+
+    public function getQuestions($id)
+    {
+        /* gives an array (nested) of all questions assigned to the particular event */
+        $id=$this->clean($id);
+        $res = $this->query("select * from questions where id ='{$id}'");
+        $retVal=array();
+        while($row=mysql_fetch_array($res))
+        {
+            $retVal[]=$row;
+        }
+        return $retVal;
+    }
+
+    public function totalQuestions($id)
+    {
+        /* returns the total number of questions assigned to the particular event */
+        $id = $this->clean($id);
+        $row = $this->fetch_row("select count(qid) from questions where id='{$id}'");
+        return $row[0];
+    }
+
+    public function getEvents()
+    {
+        /* returns an array (nested) contaning info of all the events with CBT */
+        $res = $this->query("select * from events where eventid in (select eventid from cbt)");
+        $retVal=array();
+        while($row=mysql_fetch_array($res))
+        {
+            $retVal[]=$row;
+        }
+        return $retVal;
+    }
+
+    public function isRegistered($delno,$eventid)
+    {
+        /* checks if the user has registered for the event
+            returns 
+                True -- when sucess
+                False -- when not registered
+        */
+        $delno = $this->clean($delno);
+        $eventid = $this->clean($eventid);
+        $row = $this->fetch_row("select * from reginfo where eventid ='{$eventid}' and delno='{$delno}'");
+        if ($row)
+        {
+            return True;
+        }
+        else
+        {
+            return False;
+        }
+    }
+
+// TODO
+	public  function cbtLogin($uname,$eventkey)
+	{
+		/* checking user for correct password returns
+			array (<level>,<key>)  -  if password is correct
+			array (error)                  -  if wrong password or user does not exist
+		*/
+		$uname = $this->clean($uname);
+		$row=$this->fetch_row("select password,level from heads where username='{$uname}'");
+		if ($row)
+		{
+			if ($row[0] == sha1($pass.$this->SALT))
+			{
+				$tval = time();
+				$key = sha1($tval.$this->SALT);
+				$res=$this->query("update heads set passkey ='{$key}', reset='{$tval}' where username='{$uname}'");
+				$ret = array();
+				$ret[] = $row[1];
+				$ret[] = $key;
+				return $ret;
+			}
+		}
+		return array("error");
+	}
+
+//TODO
+	public  function cbtCheckAuth($uname,$key)
+	{
+		/* checking user for correct passkey returns
+			<level>  -  if passkey is correct
+			error    -  if wrong passkey or user does not exist
+		*/
+		$uname = $this->clean($uname);
+		$row=$this->fetch_row("select passkey,reset,level from heads where username='{$uname}'");
+		if ($row)
+		{
+			if ($row[0] == $key)
+			{
+				$tval = time();
+				if (($row[1] +$this->logintime) > $tval)
+				{
+					return $row[2];
+				}
+			}
+		}
+		return "error";
+	}
+
+}
+
 ?>

@@ -149,7 +149,7 @@ if (True)//TODO check everything here
                 }
                 else
                 {
-                    echo 'Sorry the Delegate Number does not exists';
+                    echo 'Sorry the Delegate Number does not exists<br>'.$goBack;
                 }
             }   
             else if (isset($_POST['event']) and isset($_POST['delno']) and isset($_POST['confirm']))
